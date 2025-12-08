@@ -41,13 +41,13 @@ class AktivitasMengajar extends Component implements HasActions, HasSchemas, Has
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn (): Builder => DosenPengajarKelasKuliah::query())
+            ->query(fn(): Builder => DosenPengajarKelasKuliah::query())
             ->columns([
                 TextColumn::make('id')
                     ->rowIndex()
                     ->label('No.'),
                 TextColumn::make('registrasiDosen.dosen.nama_dosen')
-                    ->description(fn (DosenPengajarKelasKuliah $record): string => 'Alias: '.$record->dosenAlias->nama_dosen),
+                    ->description(fn(DosenPengajarKelasKuliah $record): string => 'Alias: ' . $record->dosenAlias->nama_dosen),
                 TextColumn::make('sks_substansi_total')
                     ->label('Bobot SKS'),
                 TextColumn::make('rencana_minggu_pertemuan')
@@ -56,7 +56,7 @@ class AktivitasMengajar extends Component implements HasActions, HasSchemas, Has
                     ->label('Realisasi Pertemuan'),
                 TextColumn::make('id_jenis_evaluasi')
                     ->label('Jenis Evaluasi')
-                    ->formatStateUsing(fn ($state) => match ($state) {
+                    ->formatStateUsing(fn($state) => match ($state) {
                         '1' => 'Evaluasi Akademik',
                         '2' => 'Aktivitas Partisipatif',
                         '3' => 'Hasil Proyek',
@@ -79,17 +79,24 @@ class AktivitasMengajar extends Component implements HasActions, HasSchemas, Has
                                     ->label('Dosen')
                                     ->required()
                                     ->columnSpanFull()
-                                    ->options(
-                                        fn () => PenugasanDosen::join('dosens', 'penugasan_dosens.id_dosen', '=', 'dosens.id_dosen')
+                                    ->options(function () {
+                                        $id_kelas_kuliah = $this->record->id_kelas_kuliah;
+
+                                        $dosenTerdaftar = DosenPengajarKelasKuliah::where('id_kelas_kuliah', $id_kelas_kuliah)
+                                            ->pluck('id_registrasi_dosen')
+                                            ->toArray();
+
+                                        return PenugasanDosen::join('dosens', 'penugasan_dosens.id_dosen', '=', 'dosens.id_dosen')
                                             ->join('prodis', 'penugasan_dosens.id_prodi', '=', 'prodis.id_prodi')
                                             ->where('id_tahun_ajaran', now()->year)
+                                            ->whereNotIn('penugasan_dosens.id_registrasi_dosen', $dosenTerdaftar) // Tambahkan filter ini
                                             ->select(
                                                 'penugasan_dosens.id_registrasi_dosen',
                                                 DB::raw("CONCAT(dosens.nama_dosen, ' - (', prodis.nama_jenjang_pendidikan,' ', prodis.nama_program_studi, ')') as display_name")
                                             )
                                             ->pluck('display_name', 'id_registrasi_dosen')
-                                            ->toArray()
-                                    )
+                                            ->toArray();
+                                    })
                                     ->searchable(),
                                 TextInput::make('sks_substansi_total')
                                     ->label('Bobot SKS ')
@@ -115,11 +122,11 @@ class AktivitasMengajar extends Component implements HasActions, HasSchemas, Has
                                     ->helperText('Centeng bila dosen pengampu kelas belum terdaftar di PDDIKTI.')
                                     ->live(),
                                 Select::make('id_dosen_alias')
-                                    ->disabled(fn (Get $get) => $get('punya_alias'))
+                                    ->disabled(fn(Get $get) => $get('punya_alias'))
                                     ->label('Dosen Alias')
-                                    ->required(fn (Get $get) => $get('punya_alias'))
+                                    ->required(fn(Get $get) => $get('punya_alias'))
                                     ->options(
-                                        fn () => Dosen::where('sync_at', null)
+                                        fn() => Dosen::where('sync_at', null)
                                             ->pluck('nama_dosen', 'id_dosen')
                                             ->toArray()
                                     )
@@ -149,18 +156,32 @@ class AktivitasMengajar extends Component implements HasActions, HasSchemas, Has
                                 Select::make('id_registrasi_dosen')
                                     ->label('Dosen')
                                     ->required()
+                                    ->disabled(true)
                                     ->columnSpanFull()
-                                    ->options(
-                                        fn () => PenugasanDosen::join('dosens', 'penugasan_dosens.id_dosen', '=', 'dosens.id_dosen')
+                                    ->options(function ($get, $record) {
+                                        $id_kelas_kuliah = $this->record->id_kelas_kuliah;
+
+                                        // Ambil dosen yang sudah terdaftar di kelas ini
+                                        $dosenTerdaftarQuery = DosenPengajarKelasKuliah::where('id_kelas_kuliah', $id_kelas_kuliah);
+
+                                        // Jika sedang mengedit, jangan sertakan record yang sedang diedit
+                                        if ($record && $record->id) {
+                                            $dosenTerdaftarQuery = $dosenTerdaftarQuery->where('id', '!=', $record->id);
+                                        }
+
+                                        $dosenTerdaftar = $dosenTerdaftarQuery->pluck('id_registrasi_dosen')->toArray();
+
+                                        return PenugasanDosen::join('dosens', 'penugasan_dosens.id_dosen', '=', 'dosens.id_dosen')
                                             ->join('prodis', 'penugasan_dosens.id_prodi', '=', 'prodis.id_prodi')
                                             ->where('id_tahun_ajaran', now()->year)
+                                            ->whereNotIn('penugasan_dosens.id_registrasi_dosen', $dosenTerdaftar)
                                             ->select(
                                                 'penugasan_dosens.id_registrasi_dosen',
                                                 DB::raw("CONCAT(dosens.nama_dosen, ' - (', prodis.nama_jenjang_pendidikan,' ', prodis.nama_program_studi, ')') as display_name")
                                             )
                                             ->pluck('display_name', 'id_registrasi_dosen')
-                                            ->toArray()
-                                    )
+                                            ->toArray();
+                                    })
                                     ->searchable(),
                                 TextInput::make('sks_substansi_total')
                                     ->label('Bobot SKS ')
@@ -186,11 +207,11 @@ class AktivitasMengajar extends Component implements HasActions, HasSchemas, Has
                                     ->helperText('Centang bila dosen pengampu kelas belum terdaftar di PDDIKTI.')
                                     ->live(),
                                 Select::make('id_dosen_alias')
-                                    ->disabled(fn (Get $get) => ! $get('punya_alias'))
+                                    ->disabled(fn(Get $get) => !$get('punya_alias'))
                                     ->label('Dosen Alias')
-                                    ->required(fn (Get $get) => $get('punya_alias'))
+                                    ->required(fn(Get $get) => $get('punya_alias'))
                                     ->options(
-                                        fn () => Dosen::where('sync_at', null)
+                                        fn() => Dosen::where('sync_at', null)
                                             ->pluck('nama_dosen', 'id_dosen')
                                             ->toArray()
                                     )
