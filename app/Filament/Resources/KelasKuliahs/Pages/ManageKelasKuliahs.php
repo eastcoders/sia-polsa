@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\KelasKuliahs\Pages;
 
 use App\Filament\Resources\KelasKuliahs\KelasKuliahResource;
+use App\Models\MataKuliah;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
+use Illuminate\Support\Str;
 
 class ManageKelasKuliahs extends ManageRecords
 {
@@ -13,7 +15,20 @@ class ManageKelasKuliahs extends ManageRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->mutateDataUsing(function (array $data) {
+
+                    $data['id_kelas_kuliah'] = Str::uuid()->toString();
+
+                    $idMatkul = MataKuliah::where('id_matkul', $data['id_matkul'])->first();
+
+                    $data['sks_mk'] = $idMatkul->sks_mata_kuliah;
+                    $data['sks_tm'] = $idMatkul->sks_tatap_muka;
+                    $data['sks_prak'] = $idMatkul->sks_praktek;
+                    $data['sks_sim'] = $idMatkul->sks_praktek_lapangan;
+
+                    return $data;
+                }),
         ];
     }
 }

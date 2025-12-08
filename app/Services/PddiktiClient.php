@@ -237,4 +237,24 @@ class PddiktiClient
             'offset' => $filter['offset'] ?? 0,
         ]);
     }
+
+    public function getJenisEvaluasi(array $filter = [])
+    {
+        return $this->call('GetJenisEvaluasi', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getListPenugasanDosen(array $filter = [])
+    {
+        return $this->call('GetListPenugasanDosen', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
 }

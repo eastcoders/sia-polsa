@@ -12,8 +12,17 @@ class EditDosen extends EditRecord
 
     protected function getHeaderActions(): array
     {
+        // return ;
         return [
+            $this->getSaveFormAction()
+                ->formId('form'),
+            $this->getCancelFormAction(),
             DeleteAction::make(),
         ];
+    }
+
+    public function getFormActions(): array
+    {
+        return [];
     }
 }

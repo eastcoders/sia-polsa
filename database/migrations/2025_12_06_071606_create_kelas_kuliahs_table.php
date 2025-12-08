@@ -17,10 +17,10 @@ return new class extends Migration
             $table->string('id_prodi');
             $table->string('id_semester');
             $table->string('nama_kelas_kuliah');
-            $table->string('smt_mk');
-            $table->string('smt_tm');
-            $table->string('smt_prak');
-            $table->string('smt_sim');
+            $table->string('sks_mk');
+            $table->string('sks_tm');
+            $table->string('sks_prak');
+            $table->string('sks_sim');
             $table->string('bahasan')->nullable();
             $table->string('a_selenggara_pditt')->nullable();
             $table->string('apa_untuk_pditt')->nullable();

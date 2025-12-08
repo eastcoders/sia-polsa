@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\KelasKuliahs;
 
 use App\Filament\Resources\KelasKuliahs\Pages\ManageKelasKuliahs;
+use App\Livewire\Perkuliahan\AktivitasMengajar;
 use App\Models\KelasKuliah;
+use App\Models\Prodi;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -14,17 +16,22 @@ use Filament\Actions\ForceDeleteBulkAction;
 use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Livewire as LivewireSchema;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use UnitEnum;
 
 class KelasKuliahResource extends Resource
 {
@@ -32,40 +39,75 @@ class KelasKuliahResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
+    protected static string|UnitEnum|null $navigationGroup = 'Perkulihan';
+
+    protected static ?int $navigationSort = 3;
+
     public static function form(Schema $schema): Schema
     {
         return $schema
             ->components([
-                TextInput::make('id_kelas_kuliah')
-                    ->required(),
-                TextInput::make('id_prodi')
-                    ->required(),
-                TextInput::make('id_semester')
-                    ->required(),
-                TextInput::make('nama_kelas_kuliah')
-                    ->required(),
-                TextInput::make('smt_mk')
-                    ->required(),
-                TextInput::make('smt_tm')
-                    ->required(),
-                TextInput::make('smt_prak')
-                    ->required(),
-                TextInput::make('smt_sim')
-                    ->required(),
-                TextInput::make('bahasan'),
-                TextInput::make('a_selenggara_pditt'),
-                TextInput::make('apa_untuk_pditt'),
-                TextInput::make('kapasitas'),
-                DatePicker::make('tanggal_mulai_efektif'),
-                DatePicker::make('tanggal_akhir_efektif'),
-                TextInput::make('id_mou'),
-                TextInput::make('id_matkul')
-                    ->required(),
-                Select::make('lingkup')
-                    ->options([1 => '1', '2', '3']),
-                Select::make('mode')
-                    ->options(['O' => 'O', 'F' => 'F', 'M' => 'M']),
-                DateTimePicker::make('sync_at'),
+                Section::make('Kelas Kuliah')
+                    ->columnSpanFull()
+                    ->columns(2)
+                    ->description('Prevent abuse by limiting the number of requests per period')
+                    ->schema([
+                        // ...
+                        Select::make('id_prodi')
+                            ->label('Program Studi')
+                            ->relationship(
+                                name: 'prodi',
+                                titleAttribute: 'nama_program_studi',
+                                modifyQueryUsing: fn (Builder $query) => $query
+                                    ->orderBy('nama_jenjang_pendidikan')
+                                    ->orderBy('nama_program_studi')
+                            )
+                            ->getOptionLabelFromRecordUsing(fn (Prodi $record) => $record->programStudiLengkap)
+                            ->native(false)
+                            ->required(),
+                        Select::make('id_semester')
+                            ->label('Semester')
+                            ->native(false)
+                            ->relationship(
+                                name: 'semester',
+                                titleAttribute: 'nama_semester',
+                                modifyQueryUsing: fn (Builder $query) => $query
+                                    ->where('a_periode_aktif', '1')
+                                    ->where('id_tahun_ajaran', '>=', now()->year)
+                                    ->orderBy('id_tahun_ajaran', 'asc')
+                                    ->orderBy('nama_semester', 'asc')
+                            )
+                            ->required(),
+                        TextInput::make('nama_kelas_kuliah')
+                            ->label('Nama Kelas Kuliah')
+                            ->required(),
+                        Select::make('id_matkul')
+                            ->relationship('matkul', 'nama_mata_kuliah')
+                            ->searchable()
+                            ->preload()
+                            ->required(),
+                        Select::make('lingkup')
+                            ->native(false)
+                            ->options(['1' => 'Internal', '2' => 'External', '3' => 'Campuran']),
+                        Select::make('mode')
+                            ->native(false)
+                            ->options(['O' => 'Online', 'F' => 'Offline', 'M' => 'Campuran']),
+                        DatePicker::make('tanggal_mulai_efektif'),
+                        DatePicker::make('tanggal_akhir_efektif'),
+                        Tabs::make('Tabs')
+                            ->visibleOn('edit')
+                            ->columnSpanFull()
+                            ->tabs([
+                                Tab::make('Dosen Pengajar')
+                                    ->schema([
+                                        LivewireSchema::make(AktivitasMengajar::class),
+                                    ]),
+                                Tab::make('Mahasiswa KRS/Peserta Kelas')
+                                    ->schema([
+                                        // ...
+                                    ]),
+                                ]),
+                    ]),
             ]);
     }
 
@@ -73,69 +115,38 @@ class KelasKuliahResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('id_kelas_kuliah')
+                TextColumn::make('id')
+                    ->label('No.')
+                    ->rowIndex(),
+                TextColumn::make('prodi.programStudiLengkap')
+                    ->label('Program Studi')
                     ->searchable(),
-                TextColumn::make('id_prodi')
+                TextColumn::make('semester.nama_semester')
                     ->searchable(),
-                TextColumn::make('id_semester')
+                TextColumn::make('matkul.kode_mata_kuliah')
+                    ->label('Kode MK')
+                    ->color('info')
+                    ->searchable(),
+                TextColumn::make('matkul.nama_mata_kuliah')
+                    ->label('Nama Mata Kuliah')
                     ->searchable(),
                 TextColumn::make('nama_kelas_kuliah')
+                    ->label('Nama Kelas')
                     ->searchable(),
-                TextColumn::make('smt_mk')
+                TextColumn::make('sks_mk')
+                    ->label('Bobot MK (SKS)')
                     ->searchable(),
-                TextColumn::make('smt_tm')
-                    ->searchable(),
-                TextColumn::make('smt_prak')
-                    ->searchable(),
-                TextColumn::make('smt_sim')
-                    ->searchable(),
-                TextColumn::make('bahasan')
-                    ->searchable(),
-                TextColumn::make('a_selenggara_pditt')
-                    ->searchable(),
-                TextColumn::make('apa_untuk_pditt')
-                    ->searchable(),
-                TextColumn::make('kapasitas')
-                    ->searchable(),
-                TextColumn::make('tanggal_mulai_efektif')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('tanggal_akhir_efektif')
-                    ->date()
-                    ->sortable(),
-                TextColumn::make('id_mou')
-                    ->searchable(),
-                TextColumn::make('id_matkul')
-                    ->searchable(),
-                TextColumn::make('lingkup')
-                    ->badge(),
-                TextColumn::make('mode')
-                    ->badge(),
-                TextColumn::make('sync_at')
-                    ->dateTime()
-                    ->sortable(),
-                TextColumn::make('deleted_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()
+                    ->url(fn ($record) => KelasKuliahResource::getUrl('add-dosen-pengajar', ['record' => $record->getKey()])),
                 DeleteAction::make(),
                 ForceDeleteAction::make(),
                 RestoreAction::make(),
-            ])
+            ], position: RecordActionsPosition::BeforeColumns)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
@@ -149,6 +160,7 @@ class KelasKuliahResource extends Resource
     {
         return [
             'index' => ManageKelasKuliahs::route('/'),
+            'add-dosen-pengajar' => Pages\AddDosenPengajarPage::route('{record}/add-dosen-pengajar'),
         ];
     }
 

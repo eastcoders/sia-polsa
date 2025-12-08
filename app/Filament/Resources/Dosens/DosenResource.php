@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Dosens;
 
 use App\Filament\Resources\Dosens\Pages\ManageDosens;
+use App\Livewire\Dosen\RegistrasiDosen;
 use App\Models\Agama;
 use App\Models\Dosen;
 use BackedEnum;
@@ -14,11 +15,14 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Livewire;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 
 class DosenResource extends Resource
 {
@@ -51,6 +55,14 @@ class DosenResource extends Resource
                     ->required(),
                 DatePicker::make('tanggal_lahir')
                     ->required(),
+                Section::make()
+                    ->visibleOn('edit')
+                    ->columnSpanFull()
+                    ->schema([
+                        Livewire::make(RegistrasiDosen::class)
+                            ->key('register-dosen')
+                            ->hidden(fn (?Model $record): bool => $record === null),
+                    ]),
             ]);
     }
 
@@ -92,9 +104,8 @@ class DosenResource extends Resource
             ])
             ->recordActions([
                 EditAction::make()
-                    ->disabled(fn ($record) => $record->sync_at != null),
-                DeleteAction::make()
-                    ->disabled(fn ($record) => $record->sync_at != null),
+                    ->url(fn ($record) => DosenResource::getUrl('edit', ['record' => $record])),
+                DeleteAction::make(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -107,6 +118,7 @@ class DosenResource extends Resource
     {
         return [
             'index' => ManageDosens::route('/'),
+            'edit' => Pages\EditDosen::route('/{record}/edit'),
         ];
     }
 }

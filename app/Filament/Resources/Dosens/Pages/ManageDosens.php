@@ -25,7 +25,8 @@ class ManageDosens extends ManageRecords
                     $data['id_status_aktif'] = '1';
 
                     return $data;
-                }),
+                })
+                ->createAnother(false),
             Action::make('sync')
                 ->label('Sinkronisasi Dosen')
                 ->button()
