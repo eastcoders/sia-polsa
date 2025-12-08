@@ -25,4 +25,9 @@ class RiwayatPendidikan extends Model
     {
         return $this->belongsTo(Semester::class, 'id_periode_masuk', 'id_semester');
     }
+
+    public function mahasiswa()
+    {
+        return $this->hasOne(BiodataMahasiswa::class, 'id_mahasiswa', 'id_mahasiswa');
+    }
 }

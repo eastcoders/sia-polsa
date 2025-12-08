@@ -4,6 +4,7 @@ namespace App\Filament\Resources\KelasKuliahs;
 
 use App\Filament\Resources\KelasKuliahs\Pages\ManageKelasKuliahs;
 use App\Livewire\Perkuliahan\AktivitasMengajar;
+use App\Livewire\Perkuliahan\PesertaKelasTable;
 use App\Models\KelasKuliah;
 use App\Models\Prodi;
 use BackedEnum;
@@ -104,9 +105,9 @@ class KelasKuliahResource extends Resource
                                     ]),
                                 Tab::make('Mahasiswa KRS/Peserta Kelas')
                                     ->schema([
-                                        // ...
+                                        LivewireSchema::make(PesertaKelasTable::class),
                                     ]),
-                                ]),
+                            ]),
                     ]),
             ]);
     }
