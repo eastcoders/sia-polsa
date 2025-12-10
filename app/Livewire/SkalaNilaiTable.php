@@ -2,33 +2,33 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-use App\Models\SkalaNilai;
-use Filament\Tables\Table;
-use Filament\Actions\Action;
 use App\Jobs\SyncSkalaNilaiJob;
-use Illuminate\Contracts\View\View;
+use App\Models\SkalaNilai;
+use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Contracts\HasTable;
-use Filament\Notifications\Notification;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Actions\Contracts\HasActions;
-use Filament\Schemas\Contracts\HasSchemas;
-use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Livewire\Component;
 
 class SkalaNilaiTable extends Component implements HasActions, HasSchemas, HasTable
 {
     use InteractsWithActions;
-    use InteractsWithTable;
     use InteractsWithSchemas;
+    use InteractsWithTable;
 
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn(): Builder => SkalaNilai::query())
+            ->query(fn (): Builder => SkalaNilai::query())
             ->heading('Skala Nilai')
             ->description('Data Skala Nilai Prodi')
             ->columns([

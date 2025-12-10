@@ -2,11 +2,11 @@
 
 namespace App\Filament\Resources\KelasKuliahs\Pages;
 
-use Filament\Tables\Table;
-use Filament\Tables\Contracts\HasTable;
+use App\Filament\Resources\KelasKuliahs\KelasKuliahResource;
 use Filament\Resources\Pages\EditRecord;
 use Filament\Tables\Concerns\InteractsWithTable;
-use App\Filament\Resources\KelasKuliahs\KelasKuliahResource;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
 
 class AddDosenPengajarPage extends EditRecord implements HasTable
 {

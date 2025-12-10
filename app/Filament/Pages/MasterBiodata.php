@@ -2,7 +2,6 @@
 
 namespace App\Filament\Pages;
 
-use BackedEnum;
 use Filament\Pages\Page;
 use UnitEnum;
 

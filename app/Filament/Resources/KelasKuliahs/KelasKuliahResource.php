@@ -7,7 +7,6 @@ use App\Livewire\Perkuliahan\AktivitasMengajar;
 use App\Livewire\Perkuliahan\PesertaKelasTable;
 use App\Models\KelasKuliah;
 use App\Models\Prodi;
-use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -25,7 +24,6 @@ use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\TrashedFilter;
@@ -57,11 +55,11 @@ class KelasKuliahResource extends Resource
                             ->relationship(
                                 name: 'prodi',
                                 titleAttribute: 'nama_program_studi',
-                                modifyQueryUsing: fn(Builder $query) => $query
+                                modifyQueryUsing: fn (Builder $query) => $query
                                     ->orderBy('nama_jenjang_pendidikan')
                                     ->orderBy('nama_program_studi')
                             )
-                            ->getOptionLabelFromRecordUsing(fn(Prodi $record) => $record->programStudiLengkap)
+                            ->getOptionLabelFromRecordUsing(fn (Prodi $record) => $record->programStudiLengkap)
                             ->native(false)
                             ->required(),
                         Select::make('id_semester')
@@ -70,7 +68,7 @@ class KelasKuliahResource extends Resource
                             ->relationship(
                                 name: 'semester',
                                 titleAttribute: 'nama_semester',
-                                modifyQueryUsing: fn(Builder $query) => $query
+                                modifyQueryUsing: fn (Builder $query) => $query
                                     ->where('a_periode_aktif', '1')
                                     ->where('id_tahun_ajaran', '>=', now()->year)
                                     ->orderBy('id_tahun_ajaran', 'asc')
@@ -141,7 +139,7 @@ class KelasKuliahResource extends Resource
             ])
             ->recordActions([
                 EditAction::make()
-                    ->url(fn($record) => KelasKuliahResource::getUrl('add-dosen-pengajar', ['record' => $record->getKey()])),
+                    ->url(fn ($record) => KelasKuliahResource::getUrl('add-dosen-pengajar', ['record' => $record->getKey()])),
                 DeleteAction::make(),
                 ForceDeleteAction::make(),
                 RestoreAction::make(),

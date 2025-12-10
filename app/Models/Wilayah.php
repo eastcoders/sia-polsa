@@ -29,7 +29,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Wilayah whereUpdatedAt($value)
  *
  * @mixin \Eloquent
- */   
+ */
 class Wilayah extends Model
 {
     protected $casts = [

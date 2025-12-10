@@ -24,7 +24,8 @@ class KelasKuliah extends Model
         return $this->belongsTo(MataKuliah::class, 'id_matkul', 'id_matkul');
     }
 
-    public function pesertaKelas() {
+    public function pesertaKelas()
+    {
         return $this->belongsTo(PesertaKelasKuliah::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
     }
 }

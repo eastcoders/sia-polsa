@@ -2,12 +2,12 @@
 
 namespace App\Jobs;
 
-use Carbon\Carbon;
 use App\Models\SkalaNilai;
 use App\Services\PddiktiClient;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Foundation\Queue\Queueable;
+use Carbon\Carbon;
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Queue\Queueable;
+use Illuminate\Support\Facades\DB;
 
 class SyncSkalaNilaiJob implements ShouldQueue
 {

@@ -2,35 +2,33 @@
 
 namespace App\Livewire;
 
-use Livewire\Component;
-use Filament\Tables\Table;
-use App\Models\KelasKuliah;
-use Filament\Actions\Action;
-use Filament\Actions\EditAction;
-use Illuminate\Contracts\View\View;
-use Filament\Actions\BulkActionGroup;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Contracts\HasTable;
-use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Livewire;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Actions\Contracts\HasActions;
-use Filament\Schemas\Contracts\HasSchemas;
-use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Schemas\Concerns\InteractsWithSchemas;
 use App\Livewire\Perkuliahan\NilaiPerkuliahan\ListPesertaKelas;
+use App\Models\KelasKuliah;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Actions\EditAction;
+use Filament\Schemas\Components\Livewire;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Livewire\Component;
 
 class NilaiPerkuliahan extends Component implements HasActions, HasSchemas, HasTable
 {
     use InteractsWithActions;
-    use InteractsWithTable;
     use InteractsWithSchemas;
+    use InteractsWithTable;
 
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn(): Builder => KelasKuliah::query())
+            ->query(fn (): Builder => KelasKuliah::query())
             ->columns([
                 TextColumn::make('id')->label('No')->rowIndex(),
                 TextColumn::make('semester.nama_semester')->label('Semester'),
@@ -39,18 +37,15 @@ class NilaiPerkuliahan extends Component implements HasActions, HasSchemas, HasT
                 TextColumn::make('nama_kelas_kuliah')->label('Nama Kelas'),
                 TextColumn::make('matkul.sks_mata_kuliah')->label('Bobot MK (sks)'),
                 TextColumn::make('pesertaKelas')
-                    ->formatStateUsing(fn($record) => $record->pesertaKelas->count())
-                    ->label('Jumlah Peserta')
+                    ->formatStateUsing(fn ($record) => $record->pesertaKelas->count())
+                    ->label('Jumlah Peserta'),
 
-                /**
-                 * 
-                 * 1. Klik Edit untuk mengubah nilai peserta
-                 * -> tampil daftar mahasiswa berdasarkan id kelas kuliah
-                 * -> tambahkan form untuk mengisi nilai (dropdown)
-                 * -> simpan ke database.
-                 * 
-                 */
-
+            /**
+             * 1. Klik Edit untuk mengubah nilai peserta
+             * -> tampil daftar mahasiswa berdasarkan id kelas kuliah
+             * -> tambahkan form untuk mengisi nilai (dropdown)
+             * -> simpan ke database.
+             */
             ])
             ->filters([
                 //
@@ -64,7 +59,7 @@ class NilaiPerkuliahan extends Component implements HasActions, HasSchemas, HasT
                     ->modalHeading('Update Nilai Peserta')
                     ->modalWidth('6xl')
                     ->schema([
-                        Livewire::make(ListPesertaKelas::class)
+                        Livewire::make(ListPesertaKelas::class),
                     ]),
             ])
             ->toolbarActions([

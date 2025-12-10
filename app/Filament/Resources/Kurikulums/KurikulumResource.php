@@ -5,7 +5,6 @@ namespace App\Filament\Resources\Kurikulums;
 use App\Filament\Resources\Kurikulums\Pages\ManageKurikulums;
 use App\Models\Kurikulum;
 use App\Models\Prodi;
-use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -17,7 +16,6 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
@@ -43,11 +41,11 @@ class KurikulumResource extends Resource
                     ->relationship(
                         name: 'prodi',
                         titleAttribute: 'nama_program_studi', // kolom nyata
-                        modifyQueryUsing: fn(Builder $query) => $query
+                        modifyQueryUsing: fn (Builder $query) => $query
                             ->orderBy('nama_jenjang_pendidikan')
                             ->orderBy('nama_program_studi')
                     )
-                    ->getOptionLabelFromRecordUsing(fn(Prodi $record) => $record->programStudiLengkap)
+                    ->getOptionLabelFromRecordUsing(fn (Prodi $record) => $record->programStudiLengkap)
                     ->native(false)
                     ->required(),
                 Select::make('id_semester')
@@ -56,7 +54,7 @@ class KurikulumResource extends Resource
                     ->relationship(
                         name: 'semester',
                         titleAttribute: 'nama_semester',
-                        modifyQueryUsing: fn(Builder $query) => $query
+                        modifyQueryUsing: fn (Builder $query) => $query
                             ->where('id_tahun_ajaran', '>=', now()->year)
                             ->orderBy('id_tahun_ajaran', 'asc')
                             ->orderBy('nama_semester', 'asc')
@@ -68,7 +66,7 @@ class KurikulumResource extends Resource
                     ->default(0)
                     ->numeric()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
                         'jumlah_sks_lulus',
                         ($get('jumlah_sks_pilihan') ?? 0) +
                         ($get('jumlah_sks_wajib') ?? 0)
@@ -79,7 +77,7 @@ class KurikulumResource extends Resource
                     ->default(0)
                     ->numeric()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
                         'jumlah_sks_lulus',
                         ($get('jumlah_sks_pilihan') ?? 0) +
                         ($get('jumlah_sks_wajib') ?? 0)
@@ -131,7 +129,7 @@ class KurikulumResource extends Resource
                             ->toArray()
                     )
                     ->query(function (Builder $query, array $data): Builder {
-                        if (!empty($data['values'])) {
+                        if (! empty($data['values'])) {
                             $query->whereIn('id_prodi', $data['values']);
                         }
 
@@ -141,7 +139,7 @@ class KurikulumResource extends Resource
             ])
             ->recordActions([
                 EditAction::make()
-                    ->url(fn($record) => KurikulumResource::getUrl('edit', ['record' => $record->getKey()])),
+                    ->url(fn ($record) => KurikulumResource::getUrl('edit', ['record' => $record->getKey()])),
                 DeleteAction::make(),
             ])
             ->toolbarActions([

@@ -2,38 +2,36 @@
 
 namespace App\Livewire\Perkuliahan\NilaiPerkuliahan;
 
-use Livewire\Component;
-use App\Models\SkalaNilai;
-use Filament\Tables\Table;
 use App\Models\PesertaKelasKuliah;
-use Illuminate\Support\Facades\DB;
-use Filament\Tables\Columns\Column;
-use Illuminate\Contracts\View\View;
-use App\Models\NilaiKelasPerkuliahan;
+use App\Models\SkalaNilai;
 use Filament\Actions\BulkActionGroup;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Contracts\HasTable;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Tables\Columns\SelectColumn;
+use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
+use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Tables\Columns\SelectColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\TextInputColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
-use Filament\Actions\Concerns\InteractsWithActions;
-use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Livewire\Component;
 
 class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasTable
 {
     use InteractsWithActions;
-    use InteractsWithTable;
     use InteractsWithSchemas;
+    use InteractsWithTable;
 
     public ?Model $record = null;
 
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn() => PesertaKelasKuliah::with('riwayatPendidikan')->where('id_kelas_kuliah', $this->record->id_kelas_kuliah))
+            ->query(fn () => PesertaKelasKuliah::with('riwayatPendidikan')->where('id_kelas_kuliah', $this->record->id_kelas_kuliah))
             ->columns([
                 TextColumn::make('id')
                     ->label('No.')
@@ -52,7 +50,7 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
                     ->searchable(),
                 TextInputColumn::make('nilai_angka')
                     ->label('Angka')
-                    ->state(fn(PesertaKelasKuliah $record) => $record->nilaiKelasPerkuliahan?->nilai_angka)
+                    ->state(fn (PesertaKelasKuliah $record) => $record->nilaiKelasPerkuliahan?->nilai_angka)
                     ->rules(['nullable', 'integer', 'between:0,100'])
                     ->updateStateUsing(function (PesertaKelasKuliah $record, $state) {
                         DB::transaction(function () use ($record, $state) {
@@ -86,12 +84,12 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
                         return SkalaNilai::where('id_prodi', $record->riwayatPendidikan->id_prodi)
                             ->orderBy('nilai_huruf')
                             ->get()
-                            ->mapWithKeys(fn($skala) => [
-                                $skala->nilai_huruf => "{$skala->nilai_huruf} ({$skala->nilai_indeks})"
+                            ->mapWithKeys(fn ($skala) => [
+                                $skala->nilai_huruf => "{$skala->nilai_huruf} ({$skala->nilai_indeks})",
                             ])
                             ->toArray();
                     })
-                    ->state(fn(PesertaKelasKuliah $record) => $record->nilaiKelasPerkuliahan?->nilai_huruf)
+                    ->state(fn (PesertaKelasKuliah $record) => $record->nilaiKelasPerkuliahan?->nilai_huruf)
                     ->updateStateUsing(function (PesertaKelasKuliah $record, $state) {
                         DB::transaction(function () use ($record, $state) {
                             $idProdi = $record->riwayatPendidikan->id_prodi;

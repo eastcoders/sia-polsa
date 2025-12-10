@@ -2,28 +2,28 @@
 
 namespace App\Livewire\Perkuliahan\PesertaKelasKuliah;
 
-use App\Models\Prodi;
-use Livewire\Component;
-use App\Models\Semester;
-use Filament\Tables\Table;
-use Filament\Actions\Action;
 use App\Models\BiodataMahasiswa;
-use Filament\Actions\BulkAction;
 use App\Models\PesertaKelasKuliah;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Log;
+use App\Models\Prodi;
+use App\Models\Semester;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Contracts\HasTable;
-use Filament\Notifications\Notification;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Actions\Contracts\HasActions;
-use Filament\Schemas\Contracts\HasSchemas;
-use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Livewire\Component;
 
 class ListMahasiswa extends Component implements HasActions, HasSchemas, HasTable
 {
@@ -36,7 +36,7 @@ class ListMahasiswa extends Component implements HasActions, HasSchemas, HasTabl
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn(): Builder => BiodataMahasiswa::with('riwayatPendidikan'))
+            ->query(fn (): Builder => BiodataMahasiswa::with('riwayatPendidikan'))
             ->columns([
                 TextColumn::make('id')
                     ->label('No.')
@@ -65,7 +65,7 @@ class ListMahasiswa extends Component implements HasActions, HasSchemas, HasTabl
                     ->query(function (Builder $query, array $data): Builder {
                         $values = $data['values'] ?? $data['value'] ?? null;
 
-                        if (!empty($values)) {
+                        if (! empty($values)) {
                             $query->whereHas('riwayatPendidikan', function (Builder $q) use ($values) {
                                 $q->whereIn('id_prodi', (array) $values);
                             });
@@ -86,7 +86,7 @@ class ListMahasiswa extends Component implements HasActions, HasSchemas, HasTabl
                     ->query(function (Builder $query, array $data): Builder {
                         $value = $data['value'] ?? null;
 
-                        if (!empty($value)) {
+                        if (! empty($value)) {
                             $query->whereHas('riwayatPendidikan.periodeDaftar', function (Builder $q) use ($value) {
                                 $q->where('id_tahun_ajaran', $value);
                             });
@@ -108,7 +108,7 @@ class ListMahasiswa extends Component implements HasActions, HasSchemas, HasTabl
                     ->action(function ($records) {
                         $this->addSelectedByRecords($records);
                     })
-                    ->requiresConfirmation()
+                    ->requiresConfirmation(),
                 // ]),
             ])
             ->checkIfRecordIsSelectableUsing(function ($record): bool {
@@ -122,7 +122,7 @@ class ListMahasiswa extends Component implements HasActions, HasSchemas, HasTabl
                         ->where('id_registrasi_mahasiswa', $idRegis)
                         ->exists();
 
-                    return !$exists; // Jika sudah ada, maka tidak bisa dipilih
+                    return ! $exists; // Jika sudah ada, maka tidak bisa dipilih
                 }
 
                 return true; // Jika tidak ada id_registrasi, boleh dipilih (jika perlu)
@@ -160,19 +160,18 @@ class ListMahasiswa extends Component implements HasActions, HasSchemas, HasTabl
 
             Notification::make()
                 ->title('Berhasil')
-                ->body(count($idRegistrasiMahasiswa) . ' mahasiswa berhasil ditambahkan sebagai peserta kelas.')
+                ->body(count($idRegistrasiMahasiswa).' mahasiswa berhasil ditambahkan sebagai peserta kelas.')
                 ->success()
                 ->actions([
                     Action::make('Tutup')
-                        ->close()
+                        ->close(),
                 ])
                 ->send();
-
 
         } catch (\Throwable $e) {
             DB::rollBack(); // Ini sebenarnya tidak perlu karena DB::transaction otomatis rollback
 
-            Log::error('Gagal menambahkan peserta kelas: ' . $e->getMessage(), [
+            Log::error('Gagal menambahkan peserta kelas: '.$e->getMessage(), [
                 'id_kelas_kuliah' => $this->id_kelas_kuliah,
                 'id_registrasi_mahasiswa' => $idRegistrasiMahasiswa,
             ]);
@@ -184,6 +183,4 @@ class ListMahasiswa extends Component implements HasActions, HasSchemas, HasTabl
                 ->send();
         }
     }
-
-
 }

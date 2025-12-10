@@ -27,7 +27,7 @@ class BidangMinatTable extends Component implements HasActions, HasSchemas, HasT
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn(): Builder => BidangMinat::query())
+            ->query(fn (): Builder => BidangMinat::query())
             ->heading('Bidang Minat')
             ->description('Data Bidang Minat')
             ->columns([
