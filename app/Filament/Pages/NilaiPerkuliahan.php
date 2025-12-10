@@ -9,7 +9,6 @@ use Filament\Support\Icons\Heroicon;
 
 class NilaiPerkuliahan extends Page
 {
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
 
     protected static ?string $recordTitleAttribute = 'Nilai Perkuliahan';
 

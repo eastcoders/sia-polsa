@@ -38,8 +38,6 @@ class KelasKuliahResource extends Resource
 {
     protected static ?string $model = KelasKuliah::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
     protected static string|UnitEnum|null $navigationGroup = 'Perkulihan';
 
     protected static ?int $navigationSort = 3;
@@ -59,11 +57,11 @@ class KelasKuliahResource extends Resource
                             ->relationship(
                                 name: 'prodi',
                                 titleAttribute: 'nama_program_studi',
-                                modifyQueryUsing: fn (Builder $query) => $query
+                                modifyQueryUsing: fn(Builder $query) => $query
                                     ->orderBy('nama_jenjang_pendidikan')
                                     ->orderBy('nama_program_studi')
                             )
-                            ->getOptionLabelFromRecordUsing(fn (Prodi $record) => $record->programStudiLengkap)
+                            ->getOptionLabelFromRecordUsing(fn(Prodi $record) => $record->programStudiLengkap)
                             ->native(false)
                             ->required(),
                         Select::make('id_semester')
@@ -72,7 +70,7 @@ class KelasKuliahResource extends Resource
                             ->relationship(
                                 name: 'semester',
                                 titleAttribute: 'nama_semester',
-                                modifyQueryUsing: fn (Builder $query) => $query
+                                modifyQueryUsing: fn(Builder $query) => $query
                                     ->where('a_periode_aktif', '1')
                                     ->where('id_tahun_ajaran', '>=', now()->year)
                                     ->orderBy('id_tahun_ajaran', 'asc')
@@ -143,7 +141,7 @@ class KelasKuliahResource extends Resource
             ])
             ->recordActions([
                 EditAction::make()
-                    ->url(fn ($record) => KelasKuliahResource::getUrl('add-dosen-pengajar', ['record' => $record->getKey()])),
+                    ->url(fn($record) => KelasKuliahResource::getUrl('add-dosen-pengajar', ['record' => $record->getKey()])),
                 DeleteAction::make(),
                 ForceDeleteAction::make(),
                 RestoreAction::make(),
