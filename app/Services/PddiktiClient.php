@@ -257,4 +257,14 @@ class PddiktiClient
             'offset' => $filter['offset'] ?? 0,
         ]);
     }
+
+    public function getListSkalaNilaiProdi(array $filter = [])
+    {
+        return $this->call('GetListSkalaNilaiProdi', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
 }

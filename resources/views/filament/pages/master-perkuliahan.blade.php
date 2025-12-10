@@ -119,7 +119,8 @@
     <div>
         @livewire('pembiayaan-table')
     </div>
-    <div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         @livewire('bidang-minat-table')
+        @livewire('skala-nilai-table')
     </div>
 </x-filament-panels::page>

@@ -27,14 +27,13 @@ class BidangMinatTable extends Component implements HasActions, HasSchemas, HasT
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn (): Builder => BidangMinat::query())
+            ->query(fn(): Builder => BidangMinat::query())
             ->heading('Bidang Minat')
             ->description('Data Bidang Minat')
             ->columns([
                 TextColumn::make('id')
                     ->rowIndex()
                     ->label('#'),
-                TextColumn::make('id_bidang_minat'),
                 TextColumn::make('nm_bidang_minat')
                     ->label('Nama Bidang'),
                 TextColumn::make('nama_program_studi'),
@@ -42,9 +41,6 @@ class BidangMinatTable extends Component implements HasActions, HasSchemas, HasT
                     ->label('Semester mulai'),
                 TextColumn::make('tamat_sk_bidang_minat')
                     ->label('Tanggal selesai'),
-                TextColumn::make('sync_at')
-                    ->dateTime()
-                    ->sortable(),
             ])
             ->filters([
                 //

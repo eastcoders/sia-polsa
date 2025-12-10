@@ -15,4 +15,9 @@ class PesertaKelasKuliah extends Model
     {
         return $this->hasMany(KelasKuliah::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
     }
+
+    public function nilaiKelasPerkuliahan()
+    {
+        return $this->belongsTo(NilaiKelasPerkuliahan::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
+    }
 }
