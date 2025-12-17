@@ -135,7 +135,7 @@ class AktivitasMengajar extends Component implements HasActions, HasSchemas, Has
                                     ->helperText('Centeng bila dosen pengampu kelas belum terdaftar di PDDIKTI.')
                                     ->live(),
                                 Select::make('id_dosen_alias')
-                                    ->disabled(fn(Get $get) => $get('punya_alias'))
+                                    ->disabled(fn(Get $get) => !$get('punya_alias'))
                                     ->label('Dosen Alias')
                                     ->required(fn(Get $get) => $get('punya_alias'))
                                     ->options(

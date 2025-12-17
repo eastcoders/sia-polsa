@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Dosen;
 use App\Models\KelasKuliah;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
@@ -24,6 +25,16 @@ class AktivitasMengajarSeeder extends Seeder
                 ->inRandomOrder()
                 ->first();
 
+            $dosen_alias = $faker->randomElement(['0', '1']);
+            $dosenAlias = null;
+
+            if ($dosen_alias == '1') {
+                $dosenAlias = Dosen::where('nip', null)
+                    ->where('nidn', null)
+                    ->inRandomOrder()
+                    ->first();
+            }
+
             DosenPengajarKelasKuliah::create([
                 'id_aktivitas_mengajar' => Str::uuid()->toString(),
                 'id_kelas_kuliah' => $kelas->id_kelas_kuliah,
@@ -32,8 +43,8 @@ class AktivitasMengajarSeeder extends Seeder
                 'rencana_minggu_pertemuan' => $faker->numberBetween(14, 16),
                 'realisasi_minggu_pertemuan' => 0,
                 'id_jenis_evaluasi' => $faker->randomElement(['1', '2', '3', '4']),
-                'punya_alias' => '0',
-                'id_dosen_alias' => null
+                'punya_alias' => $dosen_alias,
+                'id_dosen_alias' => $dosenAlias->id_dosen ?? null
             ]);
         }
         // }
