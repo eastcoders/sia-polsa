@@ -56,6 +56,10 @@ class AdminPanelProvider extends PanelProvider
                 Authenticate::class,
             ])
             ->sidebarCollapsibleOnDesktop()
-            ->viteTheme('resources/css/filament/admin/theme.css');
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->plugins([
+                // FilamentAwinTheme::make()
+                //     ->primaryColor(Color::Emerald),
+            ]);
     }
 }

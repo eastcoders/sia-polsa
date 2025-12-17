@@ -50,7 +50,7 @@ class BiodataMahasiswasTable
                             ->toArray()
                     )
                     ->query(function (Builder $query, array $data): Builder {
-                        if (! empty($data['values'])) {
+                        if (!empty($data['values'])) {
                             $query->whereHas('riwayatPendidikan', function (Builder $q) use ($data) {
                                 $q->whereIn('id_prodi', $data['values']);
                             });
@@ -67,7 +67,8 @@ class BiodataMahasiswasTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->before(fn($record) => $record->riwayatPendidikan()->delete()),
                 ]),
             ]);
     }

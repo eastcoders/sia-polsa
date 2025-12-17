@@ -28,4 +28,16 @@ class KelasKuliah extends Model
     {
         return $this->belongsTo(PesertaKelasKuliah::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
     }
+
+    public function dosenPengajarKelasKuliah()
+    {
+        return $this->hasMany(DosenPengajarKelasKuliah::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
+    }
+
+    protected static function booted()
+    {
+        static::deleting(function ($kelas) {
+            $kelas->dosenPengajarKelasKuliah()->delete();
+        });
+    }
 }

@@ -8,6 +8,6 @@ class Dosen extends Model
 {
     public function agama()
     {
-        return $this->belongsTo(Agama::class, 'id_agama');
+        return $this->belongsTo(Agama::class, 'id_agama', 'id_agama');
     }
 }
