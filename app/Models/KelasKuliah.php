@@ -38,6 +38,12 @@ class KelasKuliah extends Model
     {
         static::deleting(function ($kelas) {
             $kelas->dosenPengajarKelasKuliah()->delete();
+            $kelas->nilaiKuliah()->delete();
         });
+    }
+
+    public function nilaiKuliah()
+    {
+        return $this->belongsTo(NilaiKelasPerkuliahan::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
     }
 }

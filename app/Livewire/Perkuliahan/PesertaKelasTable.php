@@ -33,7 +33,7 @@ class PesertaKelasTable extends Component implements HasActions, HasSchemas, Has
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn (): Builder => PesertaKelasKuliah::query())
+            ->query(fn() => PesertaKelasKuliah::where('id_kelas_kuliah', $this->record->id_kelas_kuliah))
             ->columns([
                 TextColumn::make('id')
                     ->label('No.')

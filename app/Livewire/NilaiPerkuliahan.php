@@ -28,7 +28,7 @@ class NilaiPerkuliahan extends Component implements HasActions, HasSchemas, HasT
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn (): Builder => KelasKuliah::query())
+            ->query(fn(): Builder => KelasKuliah::query())
             ->columns([
                 TextColumn::make('id')->label('No')->rowIndex(),
                 TextColumn::make('semester.nama_semester')->label('Semester'),
@@ -37,15 +37,8 @@ class NilaiPerkuliahan extends Component implements HasActions, HasSchemas, HasT
                 TextColumn::make('nama_kelas_kuliah')->label('Nama Kelas'),
                 TextColumn::make('matkul.sks_mata_kuliah')->label('Bobot MK (sks)'),
                 TextColumn::make('pesertaKelas')
-                    ->formatStateUsing(fn ($record) => $record->pesertaKelas->count())
+                    ->formatStateUsing(fn($record) => $record->pesertaKelas->where('id_kelas_kuliah', $record->id_kelas_kuliah)->count())
                     ->label('Jumlah Peserta'),
-
-            /**
-             * 1. Klik Edit untuk mengubah nilai peserta
-             * -> tampil daftar mahasiswa berdasarkan id kelas kuliah
-             * -> tambahkan form untuk mengisi nilai (dropdown)
-             * -> simpan ke database.
-             */
             ])
             ->filters([
                 //

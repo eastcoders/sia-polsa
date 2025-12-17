@@ -30,4 +30,9 @@ class RiwayatPendidikan extends Model
     {
         return $this->hasOne(BiodataMahasiswa::class, 'id_mahasiswa', 'id_mahasiswa');
     }
+
+    public function nilaiKuliah()
+    {
+        return $this->belongsTo(NilaiKelasPerkuliahan::class, 'id_registrasi_mahasiswa', 'id_registrasi_mahasiswa');
+    }
 }
