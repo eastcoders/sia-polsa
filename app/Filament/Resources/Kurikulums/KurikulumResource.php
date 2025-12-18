@@ -118,6 +118,21 @@ class KurikulumResource extends Resource
                 TextColumn::make('jumlah_sks_pilihan')
                     ->label('SKS Pilihan')
                     ->searchable(),
+                TextColumn::make('sync_status')
+                    ->label('Status Sync')
+                    ->badge()
+                    ->colors([
+                        'success' => 'synced',
+                        'warning' => ['pending', 'changed'],
+                        'danger' => 'failed',
+                    ])
+                    ->tooltip(fn($record) => $record->sync_message)
+                    ->sortable(),
+                TextColumn::make('sync_at')
+                    ->label('Sync Terakhir')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('prodi')

@@ -39,6 +39,21 @@ class BiodataMahasiswasTable
                     ->label('Program Studi'),
                 TextColumn::make('riwayatPendidikan.periodeDaftar.id_tahun_ajaran')
                     ->label('Angkatan'),
+                TextColumn::make('sync_status')
+                    ->label('Status Sync')
+                    ->badge()
+                    ->colors([
+                        'success' => 'synced',
+                        'warning' => ['pending', 'changed'],
+                        'danger' => 'failed',
+                    ])
+                    ->tooltip(fn($record) => $record->sync_message)
+                    ->sortable(),
+                TextColumn::make('sync_at')
+                    ->label('Sync Terakhir')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('prodi')
@@ -60,6 +75,24 @@ class BiodataMahasiswasTable
                         return $query;
                     })
                     ->multiple(),
+                SelectFilter::make('angkatan')
+                    ->label('Angkatan (Periode Masuk)')
+                    ->options(function () {
+                        return \App\Models\Semester::orderBy('id_semester', 'desc')
+                            ->pluck('nama_semester', 'id_semester')
+                            ->toArray();
+                    })
+                    ->default(fn() => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', '1')->value('id_semester'))
+                    ->preload()
+                    ->searchable()
+                    ->query(function (Builder $query, array $data) {
+                        // dd($data['value']);
+                        if ($data['value'] ?? null) {
+                            $query->whereHas('riwayatPendidikan.periodeDaftar', function ($q) use ($data) {
+                                $q->where('id_semester', $data['value']);
+                            });
+                        }
+                    }),
             ])
             ->recordActions([
                 EditAction::make(),

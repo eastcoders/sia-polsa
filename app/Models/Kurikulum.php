@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Kurikulum extends Model
 {
+    use SoftDeletes;
     public function prodi()
     {
         return $this->belongsTo(Prodi::class, 'id_prodi', 'id_prodi');
@@ -16,7 +18,8 @@ class Kurikulum extends Model
         return $this->belongsTo(Semester::class, 'id_semester', 'id_semester');
     }
 
-    public function matkulKurikulum(){
+    public function matkulKurikulum()
+    {
         return $this->hasMany(MatkulKurikulum::class, 'id_kurikulum', 'id_kurikulum');
     }
 

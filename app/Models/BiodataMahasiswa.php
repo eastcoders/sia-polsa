@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class BiodataMahasiswa extends Model
 {
+    use SoftDeletes;
     protected $casts = [
         'tanggal_lahir' => 'date',
         'tanggal_lahir_ayah' => 'date',

@@ -42,7 +42,7 @@ class MataKuliahResource extends Resource
                     ->required(),
                 Select::make('id_prodi')
                     ->label('Program Studi Pengampu')
-                    ->options(fn () => Prodi::orderBy('id')->pluck('nama_program_studi', 'id_prodi'))
+                    ->options(fn() => Prodi::orderBy('id')->pluck('nama_program_studi', 'id_prodi'))
                     ->required(),
                 Select::make('id_jenis_mata_kuliah')
                     ->label('Jenis Mata Kuliah')
@@ -77,7 +77,7 @@ class MataKuliahResource extends Resource
                     ->default(0)
                     ->required()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
                         'sks_mata_kuliah',
                         ($get('sks_tatap_muka') ?? 0) +
                         ($get('sks_praktek') ?? 0) +
@@ -91,7 +91,7 @@ class MataKuliahResource extends Resource
                     ->default(0)
                     ->required()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
                         'sks_mata_kuliah',
                         ($get('sks_tatap_muka') ?? 0) +
                         ($get('sks_praktek') ?? 0) +
@@ -105,7 +105,7 @@ class MataKuliahResource extends Resource
                     ->default(0)
                     ->required()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
                         'sks_mata_kuliah',
                         ($get('sks_tatap_muka') ?? 0) +
                         ($get('sks_praktek') ?? 0) +
@@ -119,7 +119,7 @@ class MataKuliahResource extends Resource
                     ->default(0)
                     ->required()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
                         'sks_mata_kuliah',
                         ($get('sks_tatap_muka') ?? 0) +
                         ($get('sks_praktek') ?? 0) +
@@ -161,7 +161,7 @@ class MataKuliahResource extends Resource
                     ->searchable(),
                 TextColumn::make('id_jenis_mata_kuliah')
                     ->label('Jenis Mata Kuliah')
-                    ->formatStateUsing(fn ($state) => match ($state) {
+                    ->formatStateUsing(fn($state) => match ($state) {
                         'A' => 'Wajib',
                         'B' => 'Pilihan',
                         'C' => 'Wajib Peminatan',
@@ -169,6 +169,21 @@ class MataKuliahResource extends Resource
                         'S' => 'Tugas Akhir/Skripsi/Disertasi',
                         default => $state, // atau 'Tidak Diketahui'
                     }),
+                TextColumn::make('sync_status')
+                    ->label('Status Sync')
+                    ->badge()
+                    ->colors([
+                        'success' => 'synced',
+                        'warning' => ['pending', 'changed'],
+                        'danger' => 'failed',
+                    ])
+                    ->tooltip(fn($record) => $record->sync_message)
+                    ->sortable(),
+                TextColumn::make('sync_at')
+                    ->label('Sync Terakhir')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 SelectFilter::make('prodi')
@@ -180,7 +195,7 @@ class MataKuliahResource extends Resource
                             ->toArray()
                     )
                     ->query(function (Builder $query, array $data): Builder {
-                        if (! empty($data['values'])) {
+                        if (!empty($data['values'])) {
                             $query->whereIn('id_prodi', $data['values']);
                         }
 

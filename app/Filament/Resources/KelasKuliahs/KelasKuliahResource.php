@@ -55,11 +55,11 @@ class KelasKuliahResource extends Resource
                             ->relationship(
                                 name: 'prodi',
                                 titleAttribute: 'nama_program_studi',
-                                modifyQueryUsing: fn (Builder $query) => $query
+                                modifyQueryUsing: fn(Builder $query) => $query
                                     ->orderBy('nama_jenjang_pendidikan')
                                     ->orderBy('nama_program_studi')
                             )
-                            ->getOptionLabelFromRecordUsing(fn (Prodi $record) => $record->programStudiLengkap)
+                            ->getOptionLabelFromRecordUsing(fn(Prodi $record) => $record->programStudiLengkap)
                             ->native(false)
                             ->required(),
                         Select::make('id_semester')
@@ -68,7 +68,7 @@ class KelasKuliahResource extends Resource
                             ->relationship(
                                 name: 'semester',
                                 titleAttribute: 'nama_semester',
-                                modifyQueryUsing: fn (Builder $query) => $query
+                                modifyQueryUsing: fn(Builder $query) => $query
                                     ->where('a_periode_aktif', '1')
                                     ->where('id_tahun_ajaran', '>=', now()->year)
                                     ->orderBy('id_tahun_ajaran', 'asc')
@@ -133,13 +133,34 @@ class KelasKuliahResource extends Resource
                 TextColumn::make('sks_mk')
                     ->label('Bobot MK (SKS)')
                     ->searchable(),
+                TextColumn::make('sync_status')
+                    ->label('Status Sync')
+                    ->badge()
+                    ->colors([
+                        'success' => 'synced',
+                        'warning' => ['pending', 'changed'],
+                        'danger' => 'failed',
+                    ])
+                    ->tooltip(fn($record) => $record->sync_message)
+                    ->sortable(),
+                TextColumn::make('sync_at')
+                    ->label('Sync Terakhir')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 TrashedFilter::make(),
+                \Filament\Tables\Filters\SelectFilter::make('semester')
+                    ->relationship('semester', 'nama_semester')
+                    ->label('Semester')
+                    ->default(fn() => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', 1)->value('id_semester'))
+                    ->preload()
+                    ->searchable(),
             ])
             ->recordActions([
                 EditAction::make()
-                    ->url(fn ($record) => KelasKuliahResource::getUrl('add-dosen-pengajar', ['record' => $record->getKey()])),
+                    ->url(fn($record) => KelasKuliahResource::getUrl('add-dosen-pengajar', ['record' => $record->getKey()])),
                 DeleteAction::make(),
                 ForceDeleteAction::make(),
                 RestoreAction::make(),
