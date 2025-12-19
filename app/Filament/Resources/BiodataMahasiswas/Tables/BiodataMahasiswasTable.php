@@ -3,13 +3,15 @@
 namespace App\Filament\Resources\BiodataMahasiswas\Tables;
 
 use App\Models\Prodi;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Table;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 
 class BiodataMahasiswasTable
@@ -46,6 +48,7 @@ class BiodataMahasiswasTable
                         'success' => 'synced',
                         'warning' => ['pending', 'changed'],
                         'danger' => 'failed',
+                        'gray' => 'server_deleted',
                     ])
                     ->tooltip(fn($record) => $record->sync_message)
                     ->sortable(),
@@ -97,11 +100,39 @@ class BiodataMahasiswasTable
             ->recordActions([
                 EditAction::make(),
                 ViewAction::make(),
+                Action::make('push_to_feeder')
+                    ->label('Push to Server')
+                    ->icon('heroicon-o-cloud-arrow-up')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $record->update(['sync_status' => 'changed']);
+                        \App\Jobs\PushBiodataMahasiswaJob::dispatch($record);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Push dijadwalkan')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->before(fn($record) => $record->riwayatPendidikan()->delete()),
+                        ->before(fn($record) => $record?->riwayatPendidikan()?->delete()),
+                    BulkAction::make('push_selected')
+                        ->label('Push Selected to Server')
+                        ->icon('heroicon-o-cloud-arrow-up')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                $record->update(['sync_status' => 'changed']);
+                                \App\Jobs\PushBiodataMahasiswaJob::dispatch($record);
+                            });
+                            \Filament\Notifications\Notification::make()
+                                ->title('Bulk Push dijadwalkan')
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ]);
     }

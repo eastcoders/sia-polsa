@@ -39,6 +39,21 @@ class NilaiPerkuliahan extends Component implements HasActions, HasSchemas, HasT
                 TextColumn::make('pesertaKelas')
                     ->formatStateUsing(fn($record) => $record->pesertaKelas->where('id_kelas_kuliah', $record->id_kelas_kuliah)->count())
                     ->label('Jumlah Peserta'),
+                TextColumn::make('sync_status')
+                    ->label('Status Sync')
+                    ->badge()
+                    ->colors([
+                        'success' => 'synced',
+                        'warning' => ['pending', 'changed'],
+                        'danger' => 'failed',
+                    ])
+                    ->tooltip(fn($record) => $record->sync_message)
+                    ->sortable(),
+                TextColumn::make('sync_at')
+                    ->label('Sync Terakhir')
+                    ->dateTime()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

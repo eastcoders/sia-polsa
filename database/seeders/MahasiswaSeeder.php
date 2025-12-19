@@ -3,8 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\Agama;
+use App\Models\Prodi;
 use App\Models\Wilayah;
+use App\Models\Semester;
 use App\Models\Pekerjaan;
+use App\Models\ProfilePT;
+use App\Models\JalurMasuk;
 use App\Models\Penghasilan;
 use Faker\Factory as Faker;
 use Illuminate\Support\Str;
@@ -13,6 +17,7 @@ use Illuminate\Database\Seeder;
 use App\Models\AlatTransportasi;
 use App\Models\BiodataMahasiswa;
 use App\Models\JenjangPendidikan;
+use App\Models\RiwayatPendidikan;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 class MahasiswaSeeder extends Seeder
@@ -36,7 +41,7 @@ class MahasiswaSeeder extends Seeder
                 ->where('id_induk_wilayah', $kabupaten)
                 ->inRandomOrder()->value('id_wilayah');
 
-            BiodataMahasiswa::create([
+            $mahasiswa = BiodataMahasiswa::create([
                 'id_mahasiswa' => Str::uuid()->toString(),
                 'nama_lengkap' => $faker->name(),
                 'jenis_kelamin' => $faker->randomElement(['L', 'P']),
@@ -91,6 +96,21 @@ class MahasiswaSeeder extends Seeder
                 'id_pekerjaan_wali' => Pekerjaan::inRandomOrder()->value('id_pekerjaan'),
                 'id_penghasilan_wali' => Penghasilan::inRandomOrder()->value('id_penghasilan'),
                 'id_pendidikan_wali' => JenjangPendidikan::inRandomOrder()->value('id_jenjang_didik'),
+            ]);
+
+            RiwayatPendidikan::create([
+                'id_registrasi_mahasiswa' => Str::uuid()->toString(),
+                'nim' => $faker->numerify('##########'),
+                'id_mahasiswa' => $mahasiswa->id_mahasiswa,
+                'id_biodata_mahasiswa' => $mahasiswa->id,
+                'id_prodi' => Prodi::inRandomOrder()->value('id_prodi'),
+                'id_jenis_daftar' => '1',
+                'id_jalur_daftar' => JalurMasuk::inRandomOrder()->value('id_jalur_masuk'),
+                'id_periode_masuk' => Semester::where('id_semester', '20251')->value('id_semester'),
+                'tanggal_daftar' => now(),
+                'id_pembiayaan' => '1',
+                'biaya_masuk' => '200000',
+                'id_perguruan_tinggi' => ProfilePT::first()->id_perguruan_tinggi,
             ]);
         }
     }

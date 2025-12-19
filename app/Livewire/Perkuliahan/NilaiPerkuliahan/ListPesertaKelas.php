@@ -46,6 +46,16 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
                 TextColumn::make('riwayatPendidikan.mahasiswa.nama_lengkap')->label('Nama Lengkap')->searchable(),
                 TextColumn::make('riwayatPendidikan.prodi.nama_program_studi')->label('Jurusan')->searchable(),
                 TextColumn::make('riwayatPendidikan.periodeDaftar.id_tahun_ajaran')->label('Angkatan')->searchable(),
+                TextColumn::make('sync_status')
+                    ->label('Status Sync')
+                    ->badge()
+                    ->colors([
+                        'success' => 'synced',
+                        'warning' => ['pending', 'changed'],
+                        'danger' => 'failed',
+                    ])
+                    ->tooltip(fn($record) => $record->sync_message)
+                    ->sortable(),
 
                 // Kolom Nilai Angka
                 TextInputColumn::make('nilai_angka')

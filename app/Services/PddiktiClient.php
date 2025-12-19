@@ -9,7 +9,8 @@ class PddiktiClient
 {
     public function __construct(
         protected PddiktiTokenService $tokenService
-    ) {}
+    ) {
+    }
 
     protected function call(string $act, array $params = [])
     {
@@ -26,12 +27,12 @@ class PddiktiClient
 
         $json = $response->json();
 
-        if (! $response->successful()) {
+        if (!$response->successful()) {
             throw new Exception("HTTP Error saat call $act");
         }
 
         if (($json['error_code'] ?? 1) !== 0) {
-            throw new Exception("WS Error ($act): ".($json['error_desc'] ?? 'Tidak diketahui'));
+            throw new Exception("WS Error ($act): " . ($json['error_desc'] ?? 'Tidak diketahui'));
         }
 
         return $json['data'] ?? $json;
@@ -266,5 +267,49 @@ class PddiktiClient
             'limit' => $filter['limit'] ?? 0,
             'offset' => $filter['offset'] ?? 0,
         ]);
+    }
+
+    public function getCountMahasiswa(array $filter = [])
+    {
+        return $this->call('GetCountMahasiswa', [
+            'filter' => $filter['filter'] ?? '',
+        ]);
+    }
+
+    public function getBiodataMahasiswa(array $filter = [])
+    {
+        return $this->call('GetBiodataMahasiswa', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getCountRiwayatPendidikanMahasiswa(array $filter = [])
+    {
+        return $this->call('GetCountRiwayatPendidikanMahasiswa', [
+            'filter' => $filter['filter'] ?? '',
+        ]);
+    }
+
+    public function getRiwayatPendidikanMahasiswa(array $filter = [])
+    {
+        return $this->call('GetRiwayatPendidikanMahasiswa', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function insertBiodataMahasiswa(array $data)
+    {
+        return $this->call('InsertBiodataMahasiswa', ['record' => $data]);
+    }
+
+    public function insertRiwayatPendidikanMahasiswa(array $data)
+    {
+        return $this->call('InsertRiwayatPendidikanMahasiswa', ['record' => $data]);
     }
 }
