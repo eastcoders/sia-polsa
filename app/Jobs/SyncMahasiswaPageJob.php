@@ -49,7 +49,7 @@ class SyncMahasiswaPageJob implements ShouldQueue
                     $mahasiswa = BiodataMahasiswa::updateOrCreate(
                         ['id_server' => $row['id_mahasiswa']], // Mapping Column Strategy
                         [
-                            'id_mahasiswa' => $row['id_mahasiswa'],
+                            // 'id_mahasiswa' => $row['id_mahasiswa'],
                             'nama_lengkap' => $row['nama_mahasiswa'] ?? '-',
                             'jenis_kelamin' => $row['jenis_kelamin'] ?? '-',
                             'tanggal_lahir' => $row['tanggal_lahir'] ?? '-',

@@ -286,6 +286,26 @@ class PddiktiClient
         ]);
     }
 
+    public function getCountMataKuliah(array $filter = [])
+    {
+        return $this->call('GetCountMataKuliah', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getMataKuliah(array $filter = [])
+    {
+        return $this->call('GetListMataKuliah', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
     public function getCountRiwayatPendidikanMahasiswa(array $filter = [])
     {
         return $this->call('GetCountRiwayatPendidikanMahasiswa', [
@@ -311,5 +331,10 @@ class PddiktiClient
     public function insertRiwayatPendidikanMahasiswa(array $data)
     {
         return $this->call('InsertRiwayatPendidikanMahasiswa', ['record' => $data]);
+    }
+
+    public function insertMataKuliah(array $data)
+    {
+        return $this->call('InsertMataKuliah', ['record' => $data]);
     }
 }

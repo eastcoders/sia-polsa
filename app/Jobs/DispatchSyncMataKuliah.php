@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Jobs\SyncMataKuliahJob;
 use App\Services\PddiktiClient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -11,7 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 
-class DispatchSyncMahasiswa implements ShouldQueue
+class DispatchSyncMataKuliah implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -30,15 +31,13 @@ class DispatchSyncMahasiswa implements ShouldQueue
     {
         try {
             // 1. Get Total Data
-            $response = $client->getCountMahasiswa(['filter' => $this->filter['filter'] ?? '']);
-            // Response format: {"error_code": "0", "data": "3867"}
+            $response = $client->getCountMataKuliah(['filter' => $this->filter['filter'] ?? '']);
 
-            // dd($response);
-
-            $totalData = (int) ($response ?? 0);
+            // Handle response format (some endpoints return data directly, some wrapped)
+            $totalData = (int) (is_array($response) ? ($response['data'] ?? 0) : $response);
 
             if ($totalData === 0) {
-                Log::info('No mahasiswa data to sync.');
+                Log::info('No mata kuliah data to sync.');
                 return;
             }
 
@@ -47,27 +46,20 @@ class DispatchSyncMahasiswa implements ShouldQueue
             $jobs = [];
 
             for ($offset = 0; $offset < $totalData; $offset += $batchSize) {
-                $jobs[] = new SyncMahasiswaPageJob($batchSize, $offset, $this->filter);
+                $jobs[] = new SyncMataKuliahJob($batchSize, $offset, $this->filter);
             }
 
             // 3. Dispatch Batch
-            $startTime = now();
-            $filter = $this->filter;
-
             Bus::batch($jobs)
-                ->name('Sync Mahasiswa (' . $totalData . ' records)')
+                ->name('Sync Mata Kuliah (' . $totalData . ' records)')
                 ->onQueue('default')
                 ->allowFailures()
-                ->then(function (\Illuminate\Bus\Batch $batch) use ($startTime, $filter) {
-                    Log::info('Batch Finished. Dispatching CleanupSyncMahasiswaJob...');
-                    CleanupSyncMahasiswaJob::dispatch($startTime, $filter);
-                })
                 ->dispatch();
 
-            Log::info("Dispatched batch for {$totalData} mahasiswa records.");
+            Log::info("Dispatched batch for {$totalData} mata kuliah records.");
 
         } catch (\Exception $e) {
-            Log::error("Failed to dispatch sync mahasiswa: " . $e->getMessage());
+            Log::error("Failed to dispatch sync mata kuliah: " . $e->getMessage());
             throw $e;
         }
     }

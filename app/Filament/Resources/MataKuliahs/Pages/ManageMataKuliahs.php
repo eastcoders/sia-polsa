@@ -2,10 +2,12 @@
 
 namespace App\Filament\Resources\MataKuliahs\Pages;
 
-use App\Filament\Resources\MataKuliahs\MataKuliahResource;
-use Filament\Actions\CreateAction;
-use Filament\Resources\Pages\ManageRecords;
 use Illuminate\Support\Str;
+use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
+use App\Jobs\DispatchSyncMataKuliah;
+use Filament\Resources\Pages\ManageRecords;
+use App\Filament\Resources\MataKuliahs\MataKuliahResource;
 
 class ManageMataKuliahs extends ManageRecords
 {
@@ -20,6 +22,18 @@ class ManageMataKuliahs extends ManageRecords
                     $data['id_matkul'] = Str::uuid()->toString();
 
                     return $data;
+                }),
+            Action::make('sync_from_feeder')
+                ->label('Sync Mata Kuliah')
+                ->icon('heroicon-o-cloud-arrow-down')
+                ->color('warning')
+                ->requiresConfirmation()
+                ->action(function () {
+                    DispatchSyncMataKuliah::dispatch();
+                    \Filament\Notifications\Notification::make()
+                        ->title('Sync dijadwalkan')
+                        ->success()
+                        ->send();
                 }),
         ];
     }

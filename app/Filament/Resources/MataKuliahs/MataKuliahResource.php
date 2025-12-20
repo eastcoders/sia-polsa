@@ -2,25 +2,28 @@
 
 namespace App\Filament\Resources\MataKuliahs;
 
-use App\Filament\Resources\MataKuliahs\Pages\ManageMataKuliahs;
-use App\Models\MataKuliah;
+use App\Jobs\DispatchSyncMataKuliah;
+use UnitEnum;
 use App\Models\Prodi;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
+use App\Models\MataKuliah;
+use Filament\Tables\Table;
+use Filament\Actions\Action;
+use Filament\Schemas\Schema;
+use Filament\Actions\BulkAction;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Forms\Components\Select;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\DatePicker;
+use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use Filament\Schemas\Schema;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use UnitEnum;
+use App\Filament\Resources\MataKuliahs\Pages\ManageMataKuliahs;
 
 class MataKuliahResource extends Resource
 {
@@ -207,10 +210,38 @@ class MataKuliahResource extends Resource
                 EditAction::make()
                     ->closeModalByClickingAway(false),
                 DeleteAction::make(),
+                Action::make('push_to_feeder')
+                    ->label('Push to Server')
+                    ->icon('heroicon-o-cloud-arrow-up')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $record->update(['sync_status' => 'changed']);
+                        \App\Jobs\PushMataKuliahJob::dispatch($record);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Push dijadwalkan')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
+                    BulkAction::make('push_selected')
+                        ->label('Push Selected to Server')
+                        ->icon('heroicon-o-cloud-arrow-up')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                $record->update(['sync_status' => 'changed']);
+                                \App\Jobs\PushMataKuliahJob::dispatch($record);
+                            });
+                            \Filament\Notifications\Notification::make()
+                                ->title('Bulk Push dijadwalkan')
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ]);
     }
