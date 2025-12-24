@@ -337,4 +337,54 @@ class PddiktiClient
     {
         return $this->call('InsertMataKuliah', ['record' => $data]);
     }
+
+    public function getKurikulum(array $filter = [])
+    {
+        return $this->call('GetKurikulum', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getCountKurikulum(array $filter = [])
+    {
+        return $this->call('GetCountKurikulum', [
+            'filter' => $filter['filter'] ?? '',
+        ]);
+    }
+
+    public function insertKurikulum(array $data)
+    {
+        return $this->call('InsertKurikulum', ['record' => $data]);
+    }
+
+    public function getCountKelasKuliah(array $filter = [])
+    {
+        return $this->call('GetCountKelasKuliah', [
+            'filter' => $filter['filter'] ?? '',
+        ]);
+    }
+
+    public function getListKelasKuliah(array $filter = [])
+    {
+        return $this->call('GetListKelasKuliah', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getDetailKelasKuliah(array $filter = [])
+    {
+        return $this->call('GetDetailKelasKuliah', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
 }
