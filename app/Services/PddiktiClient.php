@@ -333,6 +333,12 @@ class PddiktiClient
         return $this->call('InsertRiwayatPendidikanMahasiswa', ['record' => $data]);
     }
 
+
+    public function insertMatkulKurikulum(array $data)
+    {
+        return $this->call('InsertMatkulKurikulum', ['record' => $data]);
+    }
+
     public function insertMataKuliah(array $data)
     {
         return $this->call('InsertMataKuliah', ['record' => $data]);
@@ -358,6 +364,11 @@ class PddiktiClient
     public function insertKurikulum(array $data)
     {
         return $this->call('InsertKurikulum', ['record' => $data]);
+    }
+
+    public function insertKelasKuliah(array $data)
+    {
+        return $this->call('InsertKelasKuliah', ['record' => $data]);
     }
 
     public function getCountKelasKuliah(array $filter = [])

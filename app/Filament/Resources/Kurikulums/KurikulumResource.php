@@ -106,7 +106,7 @@ class KurikulumResource extends Resource
                     ->label('#'),
                 TextColumn::make('nama_kurikulum')
                     ->searchable(),
-                TextColumn::make('prodi.programStudiLengkap')
+                TextColumn::make('prodi.nama_program_studi')
                     ->searchable(),
                 TextColumn::make('semester.nama_semester')
                     ->label('Mulai Berlaku')

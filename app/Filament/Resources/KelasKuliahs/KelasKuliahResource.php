@@ -2,35 +2,37 @@
 
 namespace App\Filament\Resources\KelasKuliahs;
 
-use App\Filament\Resources\KelasKuliahs\Pages\ManageKelasKuliahs;
+use UnitEnum;
+use App\Models\Prodi;
+use Filament\Tables\Table;
+use App\Models\KelasKuliah;
+use Filament\Actions\Action;
+use Filament\Schemas\Schema;
+use Filament\Actions\BulkAction;
+use Filament\Actions\EditAction;
+use Filament\Resources\Resource;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\RestoreAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Tabs;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\DatePicker;
+use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Actions\ForceDeleteBulkAction;
 use App\Livewire\Perkuliahan\AktivitasMengajar;
 use App\Livewire\Perkuliahan\PesertaKelasTable;
-use App\Models\KelasKuliah;
-use App\Models\Prodi;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\ForceDeleteBulkAction;
-use Filament\Actions\RestoreAction;
-use Filament\Actions\RestoreBulkAction;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Resource;
-use Filament\Schemas\Components\Livewire as LivewireSchema;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Schemas\Schema;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use UnitEnum;
+use Filament\Schemas\Components\Livewire as LivewireSchema;
+use App\Filament\Resources\KelasKuliahs\Pages\ManageKelasKuliahs;
 
 class KelasKuliahResource extends Resource
 {
@@ -77,7 +79,9 @@ class KelasKuliahResource extends Resource
                             ->required(),
                         TextInput::make('nama_kelas_kuliah')
                             ->label('Nama Kelas Kuliah')
-                            ->required(),
+                            ->maxLength(5)
+                            ->required()
+                            ->helperText('Masksimal 5 Huruf'),
                         Select::make('id_matkul')
                             ->relationship('matkul', 'nama_mata_kuliah')
                             ->searchable()
@@ -164,12 +168,40 @@ class KelasKuliahResource extends Resource
                 DeleteAction::make(),
                 ForceDeleteAction::make(),
                 RestoreAction::make(),
+                Action::make('push_to_feeder')
+                    ->label('Push to Server')
+                    ->icon('heroicon-o-cloud-arrow-up')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->action(function ($record) {
+                        $record->update(['sync_status' => 'changed']);
+                        \App\Jobs\PushKelasKuliahJob::dispatch($record);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Push dijadwalkan')
+                            ->success()
+                            ->send();
+                    }),
             ], position: RecordActionsPosition::BeforeColumns)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                     ForceDeleteBulkAction::make(),
                     RestoreBulkAction::make(),
+                    BulkAction::make('push_selected')
+                        ->label('Push Selected to Server')
+                        ->icon('heroicon-o-cloud-arrow-up')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->action(function ($records) {
+                            $records->each(function ($record) {
+                                $record->update(['sync_status' => 'changed']);
+                                \App\Jobs\PushKelasKuliahJob::dispatch($record);
+                            });
+                            \Filament\Notifications\Notification::make()
+                                ->title('Bulk Push dijadwalkan')
+                                ->success()
+                                ->send();
+                        }),
                 ]),
             ]);
     }
