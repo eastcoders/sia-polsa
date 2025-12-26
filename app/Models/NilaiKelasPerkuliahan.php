@@ -16,6 +16,8 @@ class NilaiKelasPerkuliahan extends Model
         'nilai_huruf',
         'nilai_indeks',
         'sync_at',
+        'sync_status',
+        'sync_message',
     ];
 
     public function kelasKuliah()

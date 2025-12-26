@@ -56,9 +56,42 @@ class PesertaKelasTable extends Component implements HasActions, HasSchemas, Has
             ])
             ->headerActions([
                 $this->inputKolektifPeserta(),
+                \Filament\Actions\Action::make('push_all_peserta')
+                    ->label('Push Semua ke Server')
+                    ->icon('heroicon-o-cloud-arrow-up')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Push Semua Peserta Kelas ke Server')
+                    ->modalDescription('Apakah kamu yakin ingin mengirim semua data peserta kelas ini ke server?')
+                    ->action(function () {
+                        $pesertaList = PesertaKelasKuliah::where('id_kelas_kuliah', $this->record->id_kelas_kuliah)->get();
+                        foreach ($pesertaList as $peserta) {
+                            \App\Jobs\PushPesertaKelasJob::dispatch($peserta);
+                        }
+                        \Filament\Notifications\Notification::make()
+                            ->title('Push dijadwalkan')
+                            ->body("Sebanyak {$pesertaList->count()} peserta kelas akan dikirim ke server.")
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->recordActions([
                 DeleteAction::make(),
+                \Filament\Actions\Action::make('push_peserta_to_server')
+                    ->label('Push')
+                    ->icon('heroicon-o-cloud-arrow-up')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Push Peserta Kelas ke Server')
+                    ->modalDescription('Apakah kamu yakin ingin mengirim data peserta kelas ini ke server?')
+                    ->action(function (PesertaKelasKuliah $record) {
+                        \App\Jobs\PushPesertaKelasJob::dispatch($record);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Push dijadwalkan')
+                            ->body('Data peserta kelas akan dikirim ke server.')
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

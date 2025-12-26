@@ -156,6 +156,24 @@ class AktivitasMengajar extends Component implements HasActions, HasSchemas, Has
                     ->createAnother(false)
                     ->closeModalByClickingAway(false)
                     ->modalSubmitActionLabel('Simpan'),
+                \Filament\Actions\Action::make('push_all_dosen')
+                    ->label('Push Semua ke Server')
+                    ->icon('heroicon-o-cloud-arrow-up')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Push Semua Dosen Pengajar ke Server')
+                    ->modalDescription('Apakah kamu yakin ingin mengirim semua data dosen pengajar di kelas ini ke server?')
+                    ->action(function () {
+                        $dosenList = DosenPengajarKelasKuliah::where('id_kelas_kuliah', $this->record->id_kelas_kuliah)->get();
+                        foreach ($dosenList as $dosen) {
+                            \App\Jobs\PushDosenPengajarJob::dispatch($dosen);
+                        }
+                        \Filament\Notifications\Notification::make()
+                            ->title('Push dijadwalkan')
+                            ->body("Sebanyak {$dosenList->count()} dosen pengajar akan dikirim ke server.")
+                            ->success()
+                            ->send();
+                    }),
             ])
             ->recordActions([
                 EditAction::make('editDosenPengajar')
@@ -238,6 +256,21 @@ class AktivitasMengajar extends Component implements HasActions, HasSchemas, Has
                     ->modalHeading('Hapus Dosen Pengajar')
                     ->modalDescription('Apakah kamu yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.')
                     ->requiresConfirmation(),
+                \Filament\Actions\Action::make('push_dosen_to_server')
+                    ->label('Push')
+                    ->icon('heroicon-o-cloud-arrow-up')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Push Dosen Pengajar ke Server')
+                    ->modalDescription('Apakah kamu yakin ingin mengirim data dosen pengajar ini ke server?')
+                    ->action(function (DosenPengajarKelasKuliah $record) {
+                        \App\Jobs\PushDosenPengajarJob::dispatch($record);
+                        \Filament\Notifications\Notification::make()
+                            ->title('Push dijadwalkan')
+                            ->body('Data dosen pengajar akan dikirim ke server.')
+                            ->success()
+                            ->send();
+                    }),
             ], position: RecordActionsPosition::BeforeColumns)
             ->toolbarActions([
                 BulkActionGroup::make([

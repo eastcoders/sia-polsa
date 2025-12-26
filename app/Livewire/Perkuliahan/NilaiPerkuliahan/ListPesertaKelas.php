@@ -6,17 +6,23 @@ use Livewire\Component;
 use App\Models\SkalaNilai;
 use Filament\Tables\Table;
 use App\Models\KelasKuliah;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use App\Models\PesertaKelasKuliah;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\View;
+use App\Jobs\PushNilaiPerkuliahanJob;
+use App\Models\NilaiKelasPerkuliahan;
 use Filament\Actions\BulkActionGroup;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Contracts\HasTable;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Actions\Contracts\HasActions;
 use Filament\Schemas\Contracts\HasSchemas;
 use Filament\Tables\Columns\TextInputColumn;
+use Illuminate\Database\Eloquent\Collection;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
@@ -162,8 +168,84 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
                         });
                     }),
             ])
+            ->recordActions([
+                Action::make('sync')
+                    ->label('Sync')
+                    ->icon('heroicon-o-arrow-path')
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->modalHeading('Sync Nilai ke Server')
+                    ->modalDescription('Apakah Anda yakin ingin sync nilai mahasiswa ini ke server?')
+                    ->action(function (PesertaKelasKuliah $record) {
+                        // Cari nilai dari record
+                        $nilai = NilaiKelasPerkuliahan::where('id_kelas_kuliah', $record->id_kelas_kuliah)
+                            ->where('id_registrasi_mahasiswa', $record->id_registrasi_mahasiswa)
+                            ->first();
+
+                        if (!$nilai) {
+                            Notification::make()
+                                ->title('Tidak ada nilai')
+                                ->body('Mahasiswa ini belum memiliki nilai untuk di-sync.')
+                                ->warning()
+                                ->send();
+                            return;
+                        }
+
+                        if ($nilai->nilai_huruf === null) {
+                            Notification::make()
+                                ->title('Nilai belum lengkap')
+                                ->body('Nilai huruf belum diisi.')
+                                ->warning()
+                                ->send();
+                            return;
+                        }
+
+                        // Dispatch job
+                        PushNilaiPerkuliahanJob::dispatch($nilai);
+
+                        Notification::make()
+                            ->title('Job dispatched')
+                            ->body('Proses sync nilai telah dijadwalkan.')
+                            ->success()
+                            ->send();
+                    })
+                    ->visible(fn(PesertaKelasKuliah $record) => $record->nilaiKuliah !== null),
+            ])
             ->toolbarActions([
-                BulkActionGroup::make([]),
+                BulkActionGroup::make([
+                    BulkAction::make('syncSelected')
+                        ->label('Sync Terpilih')
+                        ->icon('heroicon-o-arrow-path')
+                        ->color('info')
+                        ->requiresConfirmation()
+                        ->modalHeading('Sync Nilai ke Server')
+                        ->modalDescription('Apakah Anda yakin ingin sync semua nilai yang dipilih ke server?')
+                        ->action(function (Collection $records) {
+                            $dispatched = 0;
+                            $skipped = 0;
+
+                            foreach ($records as $record) {
+                                $nilai = NilaiKelasPerkuliahan::where('id_kelas_kuliah', $record->id_kelas_kuliah)
+                                    ->where('id_registrasi_mahasiswa', $record->id_registrasi_mahasiswa)
+                                    ->first();
+
+                                if (!$nilai || $nilai->nilai_huruf === null) {
+                                    $skipped++;
+                                    continue;
+                                }
+
+                                PushNilaiPerkuliahanJob::dispatch($nilai);
+                                $dispatched++;
+                            }
+
+                            Notification::make()
+                                ->title('Bulk Sync Selesai')
+                                ->body("{$dispatched} job dispatched, {$skipped} dilewati (tidak ada nilai).")
+                                ->success()
+                                ->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                ]),
             ]);
     }
 

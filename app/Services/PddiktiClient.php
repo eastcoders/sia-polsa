@@ -21,11 +21,14 @@ class PddiktiClient
             'token' => $token,
         ], $params);
 
+
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
         ])->post(config('pddikti.url'), $body);
 
         $json = $response->json();
+
+
 
         if (!$response->successful()) {
             throw new Exception("HTTP Error saat call $act");
@@ -395,6 +398,31 @@ class PddiktiClient
             'order' => $filter['order'] ?? '',
             'limit' => $filter['limit'] ?? 0,
             'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function insertPesertaKelasKuliah(array $data)
+    {
+        return $this->call('InsertPesertaKelasKuliah', ['record' => $data]);
+    }
+
+    public function insertDosenPengajarKelasKuliah(array $data)
+    {
+        return $this->call('InsertDosenPengajarKelasKuliah', ['record' => $data]);
+    }
+
+    public function updateNilaiPerkuliahanKelas(array $key, array $data)
+    {
+        return $this->call('UpdateNilaiPerkuliahanKelas', [
+            'key' => $key,
+            'record' => $data
+        ]);
+    }
+
+    public function getDictionary(array $filter = [])
+    {
+        return $this->call('GetDictionary', [
+            'fungsi' => $filter['fungsi'] ?? '',
         ]);
     }
 

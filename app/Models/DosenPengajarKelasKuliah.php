@@ -17,4 +17,9 @@ class DosenPengajarKelasKuliah extends Model
     {
         return $this->belongsTo(PenugasanDosen::class, 'id_registrasi_dosen', 'id_registrasi_dosen');
     }
+
+    public function kelasKuliah()
+    {
+        return $this->belongsTo(KelasKuliah::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
+    }
 }
