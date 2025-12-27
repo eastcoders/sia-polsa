@@ -112,6 +112,16 @@ class PddiktiClient
 
     }
 
+    public function getStatusMahasiswa(array $filter = [])
+    {
+        return $this->call('GetStatusMahasiswa', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
     public function getPembiayaan(array $filter = [])
     {
         return $this->call('GetPembiayaan', [
@@ -326,6 +336,16 @@ class PddiktiClient
         ]);
     }
 
+    public function getListRiwayatPendidikanMahasiswa(array $filter = [])
+    {
+        return $this->call('GetListRiwayatPendidikanMahasiswa', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
     public function insertBiodataMahasiswa(array $data)
     {
         return $this->call('InsertBiodataMahasiswa', ['record' => $data]);
@@ -414,6 +434,36 @@ class PddiktiClient
     public function updateNilaiPerkuliahanKelas(array $key, array $data)
     {
         return $this->call('UpdateNilaiPerkuliahanKelas', [
+            'key' => $key,
+            'record' => $data
+        ]);
+    }
+
+    public function insertAktivitasKuliahMahasiswa(array $data)
+    {
+        return $this->call('InsertAktivitasKuliahMahasiswa', ['record' => $data]);
+    }
+
+    public function getListPerkuliahanMahasiswa(array $filter = [])
+    {
+        return $this->call('GetListPerkuliahanMahasiswa', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getCountAktivitasKuliahMahasiswa(array $filter = [])
+    {
+        return $this->call('GetCountPerkuliahanMahasiswa', [
+            'filter' => $filter['filter'] ?? '',
+        ]);
+    }
+
+    public function updateRiwayatPendidikanMahasiswa(array $key, array $data)
+    {
+        return $this->call('UpdateRiwayatPendidikanMahasiswa', [
             'key' => $key,
             'record' => $data
         ]);

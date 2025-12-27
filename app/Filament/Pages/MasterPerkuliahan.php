@@ -99,10 +99,31 @@ class MasterPerkuliahan extends Page implements HasActions, HasSchemas
     public function getActions(): array
     {
         return [
+            $this->syncSemuaAction(),
             $this->syncProfilAction(),
             $this->syncAllProdiAction(),
             $this->syncAllPtAction(),
         ];
+    }
+
+    public function syncSemuaAction(): Action
+    {
+        return Action::make('sync_semua')
+            ->label('Sync Semua')
+            ->icon('heroicon-o-arrow-path')
+            ->color('success')
+            ->requiresConfirmation()
+            ->modalHeading('Konfirmasi Sinkronisasi')
+            ->modalDescription('Apakah Anda yakin ingin menjalankan sinkronisasi semua data master perkuliahan? Proses ini akan berjalan di background.')
+            ->action(function () {
+                \App\Jobs\DispatchSyncAllPerkuliahan::dispatch();
+
+                Notification::make()
+                    ->title('Sinkronisasi Dimulai')
+                    ->body('Proses sinkronisasi semua data master perkuliahan sedang berjalan di belakang layar.')
+                    ->success()
+                    ->send();
+            });
     }
 
     public function syncProfilAction(): Action
@@ -188,7 +209,7 @@ class MasterPerkuliahan extends Page implements HasActions, HasSchemas
     {
         $profil = ProfilePT::first();
 
-        if (! $profil) {
+        if (!$profil) {
             $this->setDefaultProfileValues();
 
             return;
@@ -275,7 +296,7 @@ class MasterPerkuliahan extends Page implements HasActions, HasSchemas
     {
         $profil = ProfilePT::firstOrCreate([]);
 
-        if (! $filePath) {
+        if (!$filePath) {
             $profil->clearMediaCollection('logo');
             $this->updateLogoPreview($profil);
 
@@ -283,7 +304,7 @@ class MasterPerkuliahan extends Page implements HasActions, HasSchemas
         }
 
         // Pastikan file ada di storage
-        if (! Storage::disk('public')->exists($filePath)) {
+        if (!Storage::disk('public')->exists($filePath)) {
             return;
         }
 
@@ -314,7 +335,7 @@ class MasterPerkuliahan extends Page implements HasActions, HasSchemas
     public function updateLogo(): void
     {
         // Inisialisasi form jika belum ada
-        if (! isset($this->form)) {
+        if (!isset($this->form)) {
             $this->form($this->makeForm());
         }
 
@@ -336,7 +357,7 @@ class MasterPerkuliahan extends Page implements HasActions, HasSchemas
         // Since you're using statePath('data'), the logo should be in $state['logo']
         $path = $state['logo'] ?? null;
 
-        if (! $path) {
+        if (!$path) {
             Notification::make()
                 ->title('Gagal Mengupdate Logo')
                 ->body('Tidak ada file logo yang diupload.')
@@ -352,7 +373,7 @@ class MasterPerkuliahan extends Page implements HasActions, HasSchemas
             $path = $path[0] ?? null;
         }
 
-        if (! $path) {
+        if (!$path) {
             Notification::make()
                 ->title('Gagal Mengupdate Logo')
                 ->body('File logo tidak valid.')
@@ -363,10 +384,10 @@ class MasterPerkuliahan extends Page implements HasActions, HasSchemas
         }
 
         // Pastikan file-nya memang ada di disk public
-        if (! Storage::disk('public')->exists($path)) {
+        if (!Storage::disk('public')->exists($path)) {
             Notification::make()
                 ->title('Gagal Mengupdate Logo')
-                ->body('File upload tidak ditemukan di storage (public/'.$path.').')
+                ->body('File upload tidak ditemukan di storage (public/' . $path . ').')
                 ->danger()
                 ->send();
 

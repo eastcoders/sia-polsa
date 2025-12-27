@@ -1,4 +1,8 @@
 <x-filament-panels::page>
+    {{-- Sync Progress Panel --}}
+    {{-- <div class="mb-6">
+        @livewire('sync-progress-panel', ['batchNameFilter' => '%', 'context' => 'perkuliahan', 'limit' => 5])
+    </div> --}}
 
     <div class="bg-white rounded-xl shadow-lg p-6 border border-gray-200">
         <div class="flex items-start justify-between mb-6">

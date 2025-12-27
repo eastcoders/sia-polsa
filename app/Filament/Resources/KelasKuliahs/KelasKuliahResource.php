@@ -10,6 +10,7 @@ use Filament\Actions\Action;
 use Filament\Schemas\Schema;
 use Filament\Actions\BulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Resources\Resource;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\RestoreAction;
@@ -96,7 +97,7 @@ class KelasKuliahResource extends Resource
                         DatePicker::make('tanggal_mulai_efektif'),
                         DatePicker::make('tanggal_akhir_efektif'),
                         Tabs::make('Tabs')
-                            ->visibleOn('edit')
+                            ->visibleOn(['edit', 'view'])
                             ->columnSpanFull()
                             ->tabs([
                                 Tab::make('Dosen Pengajar')
@@ -116,6 +117,15 @@ class KelasKuliahResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('sync_status')
+                    ->label('Status Sync')
+                    ->badge()
+                    ->colors([
+                        'success' => 'synced',
+                        'warning' => ['pending', 'changed'],
+                        'danger' => 'failed',
+                    ])
+                    ->tooltip(fn($record) => $record->sync_message),
                 TextColumn::make('id')
                     ->label('No.')
                     ->rowIndex(),
@@ -137,16 +147,6 @@ class KelasKuliahResource extends Resource
                 TextColumn::make('sks_mk')
                     ->label('Bobot MK (SKS)')
                     ->searchable(),
-                TextColumn::make('sync_status')
-                    ->label('Status Sync')
-                    ->badge()
-                    ->colors([
-                        'success' => 'synced',
-                        'warning' => ['pending', 'changed'],
-                        'danger' => 'failed',
-                    ])
-                    ->tooltip(fn($record) => $record->sync_message)
-                    ->sortable(),
                 TextColumn::make('sync_at')
                     ->label('Sync Terakhir')
                     ->dateTime()
@@ -163,13 +163,18 @@ class KelasKuliahResource extends Resource
                     ->searchable(),
             ])
             ->recordActions([
+                ViewAction::make()
+                    ->iconButton(),
                 EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Edit Data')
                     ->url(fn($record) => KelasKuliahResource::getUrl('add-dosen-pengajar', ['record' => $record->getKey()])),
-                DeleteAction::make(),
-                ForceDeleteAction::make(),
-                RestoreAction::make(),
+                DeleteAction::make()
+                    ->iconButton()
+                    ->tooltip('Delete Data'),
                 Action::make('push_to_feeder')
-                    ->label('Push to Server')
+                    ->iconButton()
+                    ->tooltip('Push Data')
                     ->icon('heroicon-o-cloud-arrow-up')
                     ->color('warning')
                     ->requiresConfirmation()

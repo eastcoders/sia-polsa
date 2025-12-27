@@ -1,4 +1,5 @@
 <x-filament-panels::page>
+    {{-- Sync Progress Panel --}}
     <div>
         @livewire('wilayah-table')
     </div>

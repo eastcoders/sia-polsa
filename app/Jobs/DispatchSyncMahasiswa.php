@@ -61,6 +61,10 @@ class DispatchSyncMahasiswa implements ShouldQueue
                 ->then(function (\Illuminate\Bus\Batch $batch) use ($startTime, $filter) {
                     Log::info('Batch Finished. Dispatching CleanupSyncMahasiswaJob...');
                     CleanupSyncMahasiswaJob::dispatch($startTime, $filter);
+
+                    // Lanjutkan ke sync riwayat pendidikan
+                    Log::info('Dispatching DispatchSyncRiwayatPendidikan...');
+                    DispatchSyncRiwayatPendidikan::dispatch($filter);
                 })
                 ->dispatch();
 
