@@ -38,7 +38,7 @@ class PushBiodataMahasiswaJob implements ShouldQueue
                 'id_agama' => $this->mahasiswa->id_agama,
                 'nik' => $this->mahasiswa->nik,
                 'nisn' => $this->mahasiswa->nisn,
-                'kewarganegaraan' => $this->mahasiswa->kewarganegaraan,
+                'kewarganegaraan' => $this->mahasiswa->kewarganegaraan == 'Indonesia' ? 'ID' : null,
                 'jalan' => $this->mahasiswa->jalan,
                 'rt' => $this->mahasiswa->rt,
                 'rw' => $this->mahasiswa->rw,
@@ -91,7 +91,23 @@ class PushBiodataMahasiswaJob implements ShouldQueue
                 ]);
             } else {
                 $idServer = $this->mahasiswa->id_server;
-                // Update logic if needed, skipped for now as per requirement (Insert focus)
+
+                $response = $client->updateBiodataMahasiswa([
+                    'key' => [
+                        'id_mahasiswa' => $idServer
+                    ],
+                    'record' => $biodataPayload,
+                ]);
+
+                if (!$response) {
+                    throw new \Exception("Gagal update Biodata.");
+                }
+
+                $this->mahasiswa->update([
+                    'sync_status' => 'synced',
+                    'sync_message' => null,
+                    'sync_at' => now(),
+                ]);
             }
 
             // 3. Push Riwayat Pendidikan

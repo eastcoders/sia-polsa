@@ -16,4 +16,6 @@ class EditMahasiswaDetail extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    
 }

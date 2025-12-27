@@ -351,6 +351,14 @@ class PddiktiClient
         return $this->call('InsertBiodataMahasiswa', ['record' => $data]);
     }
 
+    public function updateBiodataMahasiswa(array $data)
+    {
+        return $this->call('UpdateBiodataMahasiswa', [
+            'key' => $data['key'],
+            'record' => $data['record']
+        ]);
+    }
+
     public function insertRiwayatPendidikanMahasiswa(array $data)
     {
         return $this->call('InsertRiwayatPendidikanMahasiswa', ['record' => $data]);

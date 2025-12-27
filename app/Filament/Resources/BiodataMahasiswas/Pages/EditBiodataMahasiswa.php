@@ -20,7 +20,7 @@ class EditBiodataMahasiswa extends EditRecord
             $this->getCancelFormAction()
                 ->formId('form')
                 ->label('Batal'),
-            DeleteAction::make(),
+            // DeleteAction::make(),
         ];
     }
 
@@ -47,6 +47,8 @@ class EditBiodataMahasiswa extends EditRecord
     {
         unset($data['id_provinsi']);
         unset($data['id_kabupaten']);
+
+        $data['sync_status'] = 'changed';
 
         return $data;
     }

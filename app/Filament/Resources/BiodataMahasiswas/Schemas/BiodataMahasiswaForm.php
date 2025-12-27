@@ -34,17 +34,19 @@ class BiodataMahasiswaForm
                             ->schema([
                                 TextInput::make('nama_lengkap')
                                     ->required()
-                                    ->maxLength(255),
+                                    ->maxLength(255)
+                                    ->disabled(fn($record) => $record->id_server != null),
                                 Select::make('jenis_kelamin')
                                     ->options(['L' => 'Laki-laki', 'P' => 'Perempuan'])
                                     ->required(),
                                 Select::make('id_agama')
                                     ->label('Agama')
-                                    ->options(fn () => Agama::orderBy('id_agama')->pluck('nama_agama', 'id_agama'))
+                                    ->options(fn() => Agama::orderBy('id_agama')->pluck('nama_agama', 'id_agama'))
                                     ->searchable()
                                     ->required(),
                                 DatePicker::make('tanggal_lahir')
-                                    ->required(),
+                                    ->required()
+                                    ->disabled(fn($record) => $record->id_server != null),
                                 TextInput::make('tempat_lahir')
                                     ->required()
                                     ->maxLength(255),
@@ -70,8 +72,8 @@ class BiodataMahasiswaForm
                                     ->reactive(),
                                 TextInput::make('no_kps')
                                     ->label('Nomor KPS')
-                                    ->required(fn ($get) => $get('penerima_kps') == '1')
-                                    ->visible(fn ($get) => $get('penerima_kps') == '1'),
+                                    ->required(fn($get) => $get('penerima_kps') == '1')
+                                    ->visible(fn($get) => $get('penerima_kps') == '1'),
                             ]),
                     ])
                     ->columnSpanFull(),
@@ -102,8 +104,7 @@ class BiodataMahasiswaForm
                                         Select::make('kewarganegaraan')
                                             ->label('Kewarganegaraan')
                                             ->options([
-                                                'ID' => 'Warga Negara Indonesia',
-                                                'WNA' => 'Warga Negara Asing',
+                                                'Indonesia' => 'Warga Negara Indonesia',
                                             ])
                                             ->default('ID')
                                             ->required(),
@@ -140,38 +141,38 @@ class BiodataMahasiswaForm
                                             ->searchable()
                                             ->live()
                                             ->dehydrated(false)
-                                            ->afterStateUpdated(fn (callable $set) => $set('id_kabupaten', null)), // Reset kabupaten saat provinsi berubah
+                                            ->afterStateUpdated(fn(callable $set) => $set('id_kabupaten', null)), // Reset kabupaten saat provinsi berubah
 
                                         Select::make('id_kabupaten')
                                             ->label('Kabupaten')
                                             ->required()
-                                            ->options(fn (callable $get) => \App\Models\Wilayah::where('id_level_wilayah', 2)
+                                            ->options(fn(callable $get) => \App\Models\Wilayah::where('id_level_wilayah', 2)
                                                 ->where('id_induk_wilayah', $get('id_provinsi'))
                                                 ->orderBy('id_wilayah')
                                                 ->pluck('nama_wilayah', 'id_wilayah'))
                                             ->searchable()
                                             ->live()
                                             ->dehydrated(false)
-                                            ->disabled(fn (callable $get) => ! $get('id_provinsi'))
-                                            ->afterStateUpdated(fn (callable $set) => $set('id_kecamatan', null)),
+                                            ->disabled(fn(callable $get) => !$get('id_provinsi'))
+                                            ->afterStateUpdated(fn(callable $set) => $set('id_kecamatan', null)),
 
                                         Select::make('id_wilayah')
                                             ->label('Kecamatan')
                                             ->required()
-                                            ->options(fn (callable $get) => \App\Models\Wilayah::where('id_level_wilayah', 3)
+                                            ->options(fn(callable $get) => \App\Models\Wilayah::where('id_level_wilayah', 3)
                                                 ->where('id_induk_wilayah', $get('id_kabupaten'))
                                                 ->orderBy('id_wilayah')
                                                 ->pluck('nama_wilayah', 'id_wilayah'))
                                             ->searchable()
                                             ->live()
-                                            ->disabled(fn (callable $get) => ! $get('id_kabupaten')),
+                                            ->disabled(fn(callable $get) => !$get('id_kabupaten')),
                                         Select::make('id_jenis_tinggal')
                                             ->label('Jenis Tinggal')
-                                            ->options(fn () => JenisTinggal::orderBy('id_jenis_tinggal')->pluck('nama_jenis_tinggal', 'id_jenis_tinggal'))
+                                            ->options(fn() => JenisTinggal::orderBy('id_jenis_tinggal')->pluck('nama_jenis_tinggal', 'id_jenis_tinggal'))
                                             ->searchable(),
                                         Select::make('id_alat_transportasi')
                                             ->label('Alat Transportasi')
-                                            ->options(fn () => AlatTransportasi::orderBy('id_alat_transportasi')->pluck('nama_alat_transportasi', 'id_alat_transportasi'))
+                                            ->options(fn() => AlatTransportasi::orderBy('id_alat_transportasi')->pluck('nama_alat_transportasi', 'id_alat_transportasi'))
                                             ->searchable(),
                                     ])
                                     ->columns(2),
@@ -185,6 +186,7 @@ class BiodataMahasiswaForm
                                         TextInput::make('nama_ibu_kandung')
                                             ->label('Nama Ibu Kandung')
                                             ->required()
+                                            ->disabled(fn($record) => $record->id_server != null)
                                             ->maxLength(255),
                                         DatePicker::make('tanggal_lahir_ibu')
                                             ->label('Tanggal Lahir Ibu'),
@@ -193,15 +195,15 @@ class BiodataMahasiswaForm
                                             ->maxLength(16),
                                         Select::make('id_pekerjaan_ibu')
                                             ->label('Pekerjaan Ibu')
-                                            ->options(fn () => Pekerjaan::orderBy('id_pekerjaan')->pluck('nama_pekerjaan', 'id_pekerjaan'))
+                                            ->options(fn() => Pekerjaan::orderBy('id_pekerjaan')->pluck('nama_pekerjaan', 'id_pekerjaan'))
                                             ->searchable(),
                                         Select::make('id_penghasilan_ibu')
                                             ->label('Penghasilan Ibu')
-                                            ->options(fn () => Penghasilan::orderBy('id_penghasilan')->pluck('nama_penghasilan', 'id_penghasilan'))
+                                            ->options(fn() => Penghasilan::orderBy('id_penghasilan')->pluck('nama_penghasilan', 'id_penghasilan'))
                                             ->searchable(),
                                         Select::make('id_pendidikan_ibu')
                                             ->label('Pendidikan Ibu')
-                                            ->options(fn () => JenjangPendidikan::orderBy('id_jenjang_didik')->pluck('nama_jenjang_didik', 'id_jenjang_didik'))
+                                            ->options(fn() => JenjangPendidikan::orderBy('id_jenjang_didik')->pluck('nama_jenjang_didik', 'id_jenjang_didik'))
                                             ->searchable(),
 
                                         // Ayah
@@ -215,15 +217,15 @@ class BiodataMahasiswaForm
                                             ->maxLength(16),
                                         Select::make('id_pekerjaan_ayah')
                                             ->label('Pekerjaan Ayah')
-                                            ->options(fn () => Pekerjaan::orderBy('id_pekerjaan')->pluck('nama_pekerjaan', 'id_pekerjaan'))
+                                            ->options(fn() => Pekerjaan::orderBy('id_pekerjaan')->pluck('nama_pekerjaan', 'id_pekerjaan'))
                                             ->searchable(),
                                         Select::make('id_penghasilan_ayah')
                                             ->label('Penghasilan Ayah')
-                                            ->options(fn () => Penghasilan::orderBy('id_penghasilan')->pluck('nama_penghasilan', 'id_penghasilan'))
+                                            ->options(fn() => Penghasilan::orderBy('id_penghasilan')->pluck('nama_penghasilan', 'id_penghasilan'))
                                             ->searchable(),
                                         Select::make('id_pendidikan_ayah')
                                             ->label('Pendidikan Ayah')
-                                            ->options(fn () => JenjangPendidikan::orderBy('id_jenjang_didik')->pluck('nama_jenjang_didik', 'id_jenjang_didik'))
+                                            ->options(fn() => JenjangPendidikan::orderBy('id_jenjang_didik')->pluck('nama_jenjang_didik', 'id_jenjang_didik'))
                                             ->searchable(),
                                     ])
                                     ->columns(2),
@@ -241,15 +243,15 @@ class BiodataMahasiswaForm
                                             ->maxLength(16),
                                         Select::make('id_pekerjaan_wali')
                                             ->label('Pekerjaan Wali')
-                                            ->options(fn () => Pekerjaan::orderBy('id_pekerjaan')->pluck('nama_pekerjaan', 'id_pekerjaan'))
+                                            ->options(fn() => Pekerjaan::orderBy('id_pekerjaan')->pluck('nama_pekerjaan', 'id_pekerjaan'))
                                             ->searchable(),
                                         Select::make('id_penghasilan_wali')
                                             ->label('Penghasilan Wali')
-                                            ->options(fn () => Penghasilan::orderBy('id_penghasilan')->pluck('nama_penghasilan', 'id_penghasilan'))
+                                            ->options(fn() => Penghasilan::orderBy('id_penghasilan')->pluck('nama_penghasilan', 'id_penghasilan'))
                                             ->searchable(),
                                         Select::make('id_pendidikan_wali')
                                             ->label('Pendidikan Wali')
-                                            ->options(fn () => JenjangPendidikan::orderBy('id_jenjang_didik')->pluck('nama_jenjang_didik', 'id_jenjang_didik'))
+                                            ->options(fn() => JenjangPendidikan::orderBy('id_jenjang_didik')->pluck('nama_jenjang_didik', 'id_jenjang_didik'))
                                             ->searchable(),
                                     ])
                                     ->columns(2),

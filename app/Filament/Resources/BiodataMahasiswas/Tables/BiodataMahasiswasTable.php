@@ -13,6 +13,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Enums\RecordActionsPosition;
 
 class BiodataMahasiswasTable
 {
@@ -20,6 +21,16 @@ class BiodataMahasiswasTable
     {
         return $table
             ->columns([
+                TextColumn::make('sync_status')
+                    ->label('Status Sync')
+                    ->badge()
+                    ->colors([
+                        'success' => 'synced',
+                        'warning' => ['pending', 'changed'],
+                        'danger' => 'failed',
+                        'gray' => 'server_deleted',
+                    ])
+                    ->tooltip(fn($record) => $record->sync_message),
                 TextColumn::make('id')
                     ->label('No.')
                     ->rowIndex(),
@@ -41,17 +52,7 @@ class BiodataMahasiswasTable
                     ->label('Program Studi'),
                 TextColumn::make('riwayatPendidikan.periodeDaftar.id_tahun_ajaran')
                     ->label('Angkatan'),
-                TextColumn::make('sync_status')
-                    ->label('Status Sync')
-                    ->badge()
-                    ->colors([
-                        'success' => 'synced',
-                        'warning' => ['pending', 'changed'],
-                        'danger' => 'failed',
-                        'gray' => 'server_deleted',
-                    ])
-                    ->tooltip(fn($record) => $record->sync_message)
-                    ->sortable(),
+
                 TextColumn::make('sync_at')
                     ->label('Sync Terakhir')
                     ->dateTime()
@@ -98,10 +99,15 @@ class BiodataMahasiswasTable
                     }),
             ])
             ->recordActions([
-                EditAction::make(),
-                ViewAction::make(),
+                EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Edit Data'),
+                ViewAction::make()
+                    ->iconButton()
+                    ->tooltip('Detail Data'),
                 Action::make('push_to_feeder')
-                    ->label('Push to Server')
+                    ->iconButton()
+                    ->tooltip('Push Data')
                     ->icon('heroicon-o-cloud-arrow-up')
                     ->color('warning')
                     ->requiresConfirmation()
@@ -113,7 +119,7 @@ class BiodataMahasiswasTable
                             ->success()
                             ->send();
                     }),
-            ])
+            ], position: RecordActionsPosition::BeforeColumns)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
