@@ -21,7 +21,9 @@ abstract class BaseSyncJob implements ShouldQueue
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $limit;
+
     public int $offset;
+
     public array $filter;
 
     /**
@@ -54,9 +56,9 @@ abstract class BaseSyncJob implements ShouldQueue
 
     /**
      * Sync data with per-record error handling.
-     * 
-     * @param array $data Array of records from API
-     * @param callable $syncCallback Function that takes a single $row and syncs it
+     *
+     * @param  array  $data  Array of records from API
+     * @param  callable  $syncCallback  Function that takes a single $row and syncs it
      * @return array ['success' => int, 'errors' => int]
      */
     protected function syncWithPerRecordHandling(array $data, callable $syncCallback): array
@@ -72,7 +74,7 @@ abstract class BaseSyncJob implements ShouldQueue
                 $successCount++;
             } catch (\Exception $e) {
                 $errorCount++;
-                Log::warning("{$this->getJobName()}: Failed to sync record {$this->getRecordId($row)}: " . $e->getMessage());
+                Log::warning("{$this->getJobName()}: Failed to sync record {$this->getRecordId($row)}: ".$e->getMessage());
                 // Continue to next record - don't throw
             }
         }

@@ -19,8 +19,7 @@ class PushAktivitasKuliahMahasiswaJob implements ShouldQueue
 
     public function __construct(
         public AktivitasKuliahMahasiswa $akm
-    ) {
-    }
+    ) {}
 
     public function handle(PddiktiClient $client): void
     {
@@ -28,7 +27,7 @@ class PushAktivitasKuliahMahasiswaJob implements ShouldQueue
             $this->akm->load('riwayatPendidikan');
             $riwayat = $this->akm->riwayatPendidikan;
 
-            if (!$riwayat || empty($riwayat->id_server)) {
+            if (! $riwayat || empty($riwayat->id_server)) {
                 // Bisa dispatch PushRiwayatPendidikanJob jika ada, atau fail
                 throw new \Exception("AKM {$this->akm->id}: Riwayat Pendidikan belum memiliki id_server.");
             }
@@ -61,7 +60,7 @@ class PushAktivitasKuliahMahasiswaJob implements ShouldQueue
             Log::info("PushAktivitasKuliahMahasiswaJob: Success push AKM {$this->akm->id}");
 
         } catch (\Exception $e) {
-            Log::error("PushAktivitasKuliahMahasiswaJob: Failed {$this->akm->id}: " . $e->getMessage());
+            Log::error("PushAktivitasKuliahMahasiswaJob: Failed {$this->akm->id}: ".$e->getMessage());
             throw $e;
         }
     }

@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Jobs\SyncKelasKuliahJob;
 use App\Services\PddiktiClient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,8 +20,7 @@ class DispatchSyncKelasKuliah implements ShouldQueue
      */
     public function __construct(
         public array $filter = []
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -42,7 +40,7 @@ class DispatchSyncKelasKuliah implements ShouldQueue
                 Log::info('Total data is 0, attempting recursive sync for Kelas Kuliah.');
 
                 Bus::batch([
-                    new SyncKelasKuliahJob($batchSize, 0, $this->filter, true)
+                    new SyncKelasKuliahJob($batchSize, 0, $this->filter, true),
                 ])
                     ->name('Sync Kelas Kuliah (Recursive)')
                     ->onQueue('default')
@@ -62,7 +60,7 @@ class DispatchSyncKelasKuliah implements ShouldQueue
 
             // 3. Dispatch Batch
             Bus::batch($jobs)
-                ->name('Sync Kelas Kuliah (' . $totalData . ' records)')
+                ->name('Sync Kelas Kuliah ('.$totalData.' records)')
                 ->onQueue('default')
                 ->allowFailures()
                 ->dispatch();
@@ -70,7 +68,7 @@ class DispatchSyncKelasKuliah implements ShouldQueue
             Log::info("Dispatched batch for {$totalData} kelas kuliah records.");
 
         } catch (\Exception $e) {
-            Log::error("Failed to dispatch sync kelas kuliah: " . $e->getMessage());
+            Log::error('Failed to dispatch sync kelas kuliah: '.$e->getMessage());
             throw $e;
         }
     }

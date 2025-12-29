@@ -23,16 +23,16 @@ class DispatchSyncAllPerkuliahan implements ShouldQueue
 
         // Chain semua sync job secara berurutan
         Bus::chain([
-            new SyncProfilPTJob(),
-            new SyncAllProdiJob(),
-            new SyncAllPtJob(),
-            new SyncProdiJob(),
-            new SyncSemesterJob(),
-            new SyncJalurMasukJob(),
-            new SyncJenisPendaftaranJob(),
-            new SyncPembiayaanJob(),
-            new SyncBidangMinatJob(),
-            new SyncSkalaNilaiJob(),
+            new SyncProfilPTJob,
+            new SyncAllProdiJob,
+            new SyncAllPtJob,
+            new SyncProdiJob,
+            new SyncSemesterJob,
+            new SyncJalurMasukJob,
+            new SyncJenisPendaftaranJob,
+            new SyncPembiayaanJob,
+            new SyncBidangMinatJob,
+            new SyncSkalaNilaiJob,
         ])->onQueue('default')
             ->dispatch();
 

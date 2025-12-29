@@ -2,30 +2,30 @@
 
 namespace App\Livewire\Perkuliahan\NilaiPerkuliahan;
 
-use Livewire\Component;
-use App\Models\SkalaNilai;
-use Filament\Tables\Table;
+use App\Jobs\PushNilaiPerkuliahanJob;
 use App\Models\KelasKuliah;
+use App\Models\NilaiKelasPerkuliahan;
+use App\Models\PesertaKelasKuliah;
+use App\Models\SkalaNilai;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
-use App\Models\PesertaKelasKuliah;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Contracts\View\View;
-use App\Jobs\PushNilaiPerkuliahanJob;
-use App\Models\NilaiKelasPerkuliahan;
 use Filament\Actions\BulkActionGroup;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Contracts\HasTable;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Notifications\Notification;
-use Filament\Tables\Columns\SelectColumn;
-use Filament\Actions\Contracts\HasActions;
-use Filament\Schemas\Contracts\HasSchemas;
-use Filament\Tables\Columns\TextInputColumn;
-use Illuminate\Database\Eloquent\Collection;
-use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Actions\Concerns\InteractsWithActions;
+use Filament\Actions\Contracts\HasActions;
+use Filament\Notifications\Notification;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
+use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Tables\Columns\SelectColumn;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\TextInputColumn;
+use Filament\Tables\Concerns\InteractsWithTable;
+use Filament\Tables\Contracts\HasTable;
+use Filament\Tables\Table;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use Livewire\Component;
 
 class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasTable
 {
@@ -39,7 +39,7 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
     {
         return $table
             ->query(
-                fn() => PesertaKelasKuliah::with([
+                fn () => PesertaKelasKuliah::with([
                     'riwayatPendidikan',
                     'kelasKuliah', // ← pastikan ini ada dan benar
                     'nilaiKuliah', // relasi ke NilaiKelasPerkuliahan
@@ -60,13 +60,13 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
                         'warning' => ['pending', 'changed'],
                         'danger' => 'failed',
                     ])
-                    ->tooltip(fn($record) => $record->sync_message)
+                    ->tooltip(fn ($record) => $record->sync_message)
                     ->sortable(),
 
                 // Kolom Nilai Angka
                 TextInputColumn::make('nilai_angka')
                     ->label('Angka')
-                    ->getStateUsing(fn(PesertaKelasKuliah $record) => $record->nilaiKuliah?->nilai_angka)
+                    ->getStateUsing(fn (PesertaKelasKuliah $record) => $record->nilaiKuliah?->nilai_angka)
                     ->updateStateUsing(function (PesertaKelasKuliah $record, $state) {
                         DB::transaction(function () use ($record, $state) {
                             // Validasi
@@ -83,7 +83,7 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
 
                             // Ambil id_prodi dari kelasKuliah
                             $idProdi = $record->kelasKuliah?->id_prodi;
-                            if (!$idProdi) {
+                            if (! $idProdi) {
                                 throw new \Exception('id_prodi tidak ditemukan.');
                             }
 
@@ -118,18 +118,19 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
                     ->label('Huruf')
                     ->options(function (PesertaKelasKuliah $record) {
                         $idProdi = $record->kelasKuliah?->id_prodi;
-                        if (!$idProdi)
+                        if (! $idProdi) {
                             return [];
+                        }
 
                         return SkalaNilai::where('id_prodi', $idProdi)
                             ->orderBy('nilai_huruf')
                             ->get()
-                            ->mapWithKeys(fn($skala) => [
+                            ->mapWithKeys(fn ($skala) => [
                                 $skala->nilai_huruf => $skala->skalaIndex,
                             ])
                             ->toArray();
                     })
-                    ->getStateUsing(fn(PesertaKelasKuliah $record) => $record->nilaiKuliah?->nilai_huruf)
+                    ->getStateUsing(fn (PesertaKelasKuliah $record) => $record->nilaiKuliah?->nilai_huruf)
                     ->updateStateUsing(function (PesertaKelasKuliah $record, $state) {
                         DB::transaction(function () use ($record, $state) {
                             if ($state === null || $state === '') {
@@ -139,11 +140,12 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
                                     'nilai_indeks' => null,
                                     'nilai_angka' => null,
                                 ]);
+
                                 return;
                             }
 
                             $idProdi = $record->kelasKuliah?->id_prodi;
-                            if (!$idProdi) {
+                            if (! $idProdi) {
                                 throw new \Exception('id_prodi tidak ditemukan.');
                             }
 
@@ -182,12 +184,13 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
                             ->where('id_registrasi_mahasiswa', $record->id_registrasi_mahasiswa)
                             ->first();
 
-                        if (!$nilai) {
+                        if (! $nilai) {
                             Notification::make()
                                 ->title('Tidak ada nilai')
                                 ->body('Mahasiswa ini belum memiliki nilai untuk di-sync.')
                                 ->warning()
                                 ->send();
+
                             return;
                         }
 
@@ -197,6 +200,7 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
                                 ->body('Nilai huruf belum diisi.')
                                 ->warning()
                                 ->send();
+
                             return;
                         }
 
@@ -209,7 +213,7 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
                             ->success()
                             ->send();
                     })
-                    ->visible(fn(PesertaKelasKuliah $record) => $record->nilaiKuliah !== null),
+                    ->visible(fn (PesertaKelasKuliah $record) => $record->nilaiKuliah !== null),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -229,8 +233,9 @@ class ListPesertaKelas extends Component implements HasActions, HasSchemas, HasT
                                     ->where('id_registrasi_mahasiswa', $record->id_registrasi_mahasiswa)
                                     ->first();
 
-                                if (!$nilai || $nilai->nilai_huruf === null) {
+                                if (! $nilai || $nilai->nilai_huruf === null) {
                                     $skipped++;
+
                                     continue;
                                 }
 

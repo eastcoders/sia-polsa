@@ -5,10 +5,8 @@ namespace Database\Seeders;
 use App\Models\Agama;
 use App\Models\Dosen;
 use Faker\Factory as Faker;
-use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-
+use Illuminate\Support\Str;
 
 class DosenSeeder extends Seeder
 {

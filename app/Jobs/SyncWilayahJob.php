@@ -36,9 +36,7 @@ class SyncWilayahJob implements ShouldQueue
      */
     public int $tries = 3;
 
-    public function __construct()
-    {
-    }
+    public function __construct() {}
 
     /**
      * Execute the job.
@@ -77,7 +75,7 @@ class SyncWilayahJob implements ShouldQueue
                 $totalSynced += $chunkCount;
                 $offset += $this->chunkSize;
 
-                Log::info("SyncWilayahJob: Synced chunk at offset " . ($offset - $this->chunkSize) . ", count: {$chunkCount}, total: {$totalSynced}");
+                Log::info('SyncWilayahJob: Synced chunk at offset '.($offset - $this->chunkSize).", count: {$chunkCount}, total: {$totalSynced}");
 
                 // Jika data kurang dari chunk size, berarti ini chunk terakhir
                 if ($chunkCount < $this->chunkSize) {
@@ -85,7 +83,7 @@ class SyncWilayahJob implements ShouldQueue
                 }
 
             } catch (\Exception $e) {
-                Log::error("SyncWilayahJob: Error at offset {$offset}: " . $e->getMessage());
+                Log::error("SyncWilayahJob: Error at offset {$offset}: ".$e->getMessage());
                 throw $e; // Re-throw untuk retry mechanism
             }
         }
@@ -116,7 +114,7 @@ class SyncWilayahJob implements ShouldQueue
                 $successCount++;
             } catch (\Exception $e) {
                 $errorCount++;
-                Log::warning("SyncWilayahJob: Failed to sync wilayah {$row['id_wilayah']}: " . $e->getMessage());
+                Log::warning("SyncWilayahJob: Failed to sync wilayah {$row['id_wilayah']}: ".$e->getMessage());
                 // Continue to next record
             }
         }

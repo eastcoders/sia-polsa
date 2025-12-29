@@ -26,7 +26,7 @@ class BiodataMahasiswaResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Mahasiswa';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
 
     public static function form(Schema $schema): Schema
     {

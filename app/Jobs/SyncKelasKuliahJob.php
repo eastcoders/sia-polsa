@@ -2,10 +2,9 @@
 
 namespace App\Jobs;
 
-use Carbon\Carbon;
-use App\Models\Kurikulum;
 use App\Models\KelasKuliah;
 use App\Services\PddiktiClient;
+use Carbon\Carbon;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -27,9 +26,7 @@ class SyncKelasKuliahJob implements ShouldQueue
         public int $offset,
         public array $filter = [],
         public bool $recursive = false,
-    ) {
-
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -53,36 +50,45 @@ class SyncKelasKuliahJob implements ShouldQueue
             foreach ($data as $row) {
                 try {
                     DB::transaction(function () use ($row) {
+
+                        $existing = KelasKuliah::where('id_server', $row['id_kelas_kuliah'])->first();
+
+                        $updateData = [
+                            'nama_kelas_kuliah' => $row['nama_kelas_kuliah'],
+                            'id_prodi' => $row['id_prodi'],
+                            'id_semester' => $row['id_semester'],
+                            'id_matkul' => $row['id_matkul'] ?? null,
+                            'sks_mk' => $row['sks_mk'] ?? 0,
+                            'sks_tm' => $row['sks_tm'] ?? 0,
+                            'sks_prak' => $row['sks_prak'] ?? 0,
+                            'sks_sim' => $row['sks_sim'] ?? 0,
+                            'bahasan' => $row['bahasan'] ?? null,
+                            'tanggal_mulai_efektif' => isset($row['tanggal_mulai_efektif'])
+                                ? Carbon::parse($row['tanggal_mulai_efektif'])->format('Y-m-d')
+                                : null,
+                            'tanggal_akhir_efektif' => isset($row['tanggal_akhir_efektif'])
+                                ? Carbon::parse($row['tanggal_akhir_efektif'])->format('Y-m-d')
+                                : null,
+                            'sync_at' => now(),
+                            'sync_status' => 'synced',
+                            'sync_message' => null,
+                        ];
+
+                        if (! $existing || empty($exiting->id_kelas_kuliah)) {
+                            $updateData['id_kelas_kuliah'] = $row['id_kelas_kuliah'];
+                        }
+
                         KelasKuliah::updateOrCreate(
                             [
                                 'id_server' => $row['id_kelas_kuliah'],
                             ],
-                            [
-                                'nama_kelas_kuliah' => $row['nama_kelas_kuliah'],
-                                'id_prodi' => $row['id_prodi'],
-                                'id_semester' => $row['id_semester'],
-                                'id_matkul' => $row['id_matkul'] ?? null,
-                                'sks_mk' => $row['sks_mk'] ?? 0,
-                                'sks_tm' => $row['sks_tm'] ?? 0,
-                                'sks_prak' => $row['sks_prak'] ?? 0,
-                                'sks_sim' => $row['sks_sim'] ?? 0,
-                                'bahasan' => $row['bahasan'] ?? null,
-                                'tanggal_mulai_efektif' => isset($row['tanggal_mulai_efektif'])
-                                    ? Carbon::parse($row['tanggal_mulai_efektif'])->format('Y-m-d')
-                                    : null,
-                                'tanggal_akhir_efektif' => isset($row['tanggal_akhir_efektif'])
-                                    ? Carbon::parse($row['tanggal_akhir_efektif'])->format('Y-m-d')
-                                    : null,
-                                'sync_at' => now(),
-                                'sync_status' => 'synced',
-                                'sync_message' => null,
-                            ]
+                            $updateData
                         );
                     });
                     $successCount++;
                 } catch (\Exception $e) {
                     $errorCount++;
-                    Log::warning("SyncKelasKuliahJob: Failed to sync record {$row['id_kelas_kuliah']}: " . $e->getMessage());
+                    Log::warning("SyncKelasKuliahJob: Failed to sync record {$row['id_kelas_kuliah']}: ".$e->getMessage());
                     // Continue to next record - don't throw
                 }
             }
@@ -97,12 +103,12 @@ class SyncKelasKuliahJob implements ShouldQueue
                         $this->offset + $this->limit,
                         $this->filter,
                         true
-                    )
+                    ),
                 ]);
             }
 
         } catch (\Exception $e) {
-            Log::error("Failed to fetch data for sync kelas kuliah offset {$this->offset}: " . $e->getMessage());
+            Log::error("Failed to fetch data for sync kelas kuliah offset {$this->offset}: ".$e->getMessage());
             throw $e; // Re-throw only for API fetch errors
         }
 

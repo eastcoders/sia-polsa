@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class PesertaKelasKuliah extends Model
 {
     use SoftDeletes;
+
     public function riwayatPendidikan()
     {
         return $this->hasOne(RiwayatPendidikan::class, 'id_registrasi_mahasiswa', 'id_registrasi_mahasiswa');

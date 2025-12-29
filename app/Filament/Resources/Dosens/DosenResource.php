@@ -28,7 +28,7 @@ class DosenResource extends Resource
 {
     protected static ?string $model = Dosen::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserCircle;
 
     protected static ?string $recordTitleAttribute = 'Dosen';
 
@@ -104,8 +104,14 @@ class DosenResource extends Resource
             ])
             ->recordActions([
                 EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Edit Data')
+                    ->disabled(fn ($record) => $record->sync_at != null)
                     ->url(fn ($record) => DosenResource::getUrl('edit', ['record' => $record])),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->iconButton()
+                    ->tooltip('Hapus')
+                    ->disabled(fn ($record) => $record->sync_at != null),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

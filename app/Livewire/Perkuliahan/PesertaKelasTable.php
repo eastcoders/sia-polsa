@@ -18,7 +18,6 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Component;
 
@@ -33,7 +32,7 @@ class PesertaKelasTable extends Component implements HasActions, HasSchemas, Has
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn() => PesertaKelasKuliah::where('id_kelas_kuliah', $this->record->id_kelas_kuliah))
+            ->query(fn () => PesertaKelasKuliah::where('id_kelas_kuliah', $this->record->id_kelas_kuliah))
             ->columns([
                 TextColumn::make('id')
                     ->label('No.')

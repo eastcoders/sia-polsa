@@ -9,8 +9,11 @@ class PddiktiClient
 {
     public function __construct(
         protected PddiktiTokenService $tokenService
-    ) {
-    }
+    ) {}
+
+    // =========================================================================
+    // HELPER METHODS
+    // =========================================================================
 
     protected function call(string $act, array $params = [])
     {
@@ -21,65 +24,33 @@ class PddiktiClient
             'token' => $token,
         ], $params);
 
-
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
         ])->post(config('pddikti.url'), $body);
 
         $json = $response->json();
 
-
-
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new Exception("HTTP Error saat call $act");
         }
 
         if (($json['error_code'] ?? 1) !== 0) {
-            throw new Exception("WS Error ($act): " . ($json['error_desc'] ?? 'Tidak diketahui'));
+            throw new Exception("WS Error ($act): ".($json['error_desc'] ?? 'Tidak diketahui'));
         }
 
         return $json['data'] ?? $json;
     }
 
-    public function getProfilPT(array $filter = [])
+    public function getDictionary(array $filter = [])
     {
-        return $this->call('GetProfilPT', [
-            'filter' => $filter['filter'] ?? '',
-            'order' => $filter['order'] ?? '',
-            'limit' => $filter['limit'] ?? 0,
-            'offset' => $filter['offset'] ?? 0,
+        return $this->call('GetDictionary', [
+            'fungsi' => $filter['fungsi'] ?? '',
         ]);
     }
 
-    public function getAllPerguruanTinggi(array $filter = [])
-    {
-        return $this->call('GetAllPT', [
-            'filter' => $filter['filter'] ?? '',
-            'order' => $filter['order'] ?? '',
-            'limit' => $filter['limit'] ?? 0,
-            'offset' => $filter['offset'] ?? 0,
-        ]);
-    }
-
-    public function getAllProdi(array $filter = [])
-    {
-        return $this->call('GetAllProdi', [
-            'filter' => $filter['filter'] ?? '',
-            'order' => $filter['order'] ?? '',
-            'limit' => $filter['limit'] ?? 0,
-            'offset' => $filter['offset'] ?? 0,
-        ]);
-    }
-
-    public function getProdi(array $filter = [])
-    {
-        return $this->call('GetProdi', [
-            'filter' => $filter['filter'] ?? '',
-            'order' => $filter['order'] ?? '',
-            'limit' => $filter['limit'] ?? 0,
-            'offset' => $filter['offset'] ?? 0,
-        ]);
-    }
+    // =========================================================================
+    // DATA REFERENSI
+    // =========================================================================
 
     public function getSemester(array $filter = [])
     {
@@ -125,26 +96,6 @@ class PddiktiClient
     public function getPembiayaan(array $filter = [])
     {
         return $this->call('GetPembiayaan', [
-            'filter' => $filter['filter'] ?? '',
-            'order' => $filter['order'] ?? '',
-            'limit' => $filter['limit'] ?? 0,
-            'offset' => $filter['offset'] ?? 0,
-        ]);
-    }
-
-    public function getListDosen(array $filter = [])
-    {
-        return $this->call('GetListDosen', [
-            'filter' => $filter['filter'] ?? '',
-            'order' => $filter['order'] ?? '',
-            'limit' => $filter['limit'] ?? 0,
-            'offset' => $filter['offset'] ?? 0,
-        ]);
-    }
-
-    public function getListPenugasanSemuaDosen(array $filter = [])
-    {
-        return $this->call('GetListPenugasanSemuaDosen', [
             'filter' => $filter['filter'] ?? '',
             'order' => $filter['order'] ?? '',
             'limit' => $filter['limit'] ?? 0,
@@ -242,9 +193,9 @@ class PddiktiClient
         ]);
     }
 
-    public function getListMatkul(array $filter = [])
+    public function getJenisEvaluasi(array $filter = [])
     {
-        return $this->call('GetListMataKuliah', [
+        return $this->call('GetJenisEvaluasi', [
             'filter' => $filter['filter'] ?? '',
             'order' => $filter['order'] ?? '',
             'limit' => $filter['limit'] ?? 0,
@@ -252,9 +203,77 @@ class PddiktiClient
         ]);
     }
 
-    public function getJenisEvaluasi(array $filter = [])
+    public function getListSkalaNilaiProdi(array $filter = [])
     {
-        return $this->call('GetJenisEvaluasi', [
+        return $this->call('GetListSkalaNilaiProdi', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    // =========================================================================
+    // PERGURUAN TINGGI & PRODI
+    // =========================================================================
+
+    public function getProfilPT(array $filter = [])
+    {
+        return $this->call('GetProfilPT', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getAllPerguruanTinggi(array $filter = [])
+    {
+        return $this->call('GetAllPT', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getAllProdi(array $filter = [])
+    {
+        return $this->call('GetAllProdi', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getProdi(array $filter = [])
+    {
+        return $this->call('GetProdi', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    // =========================================================================
+    // DOSEN
+    // =========================================================================
+
+    public function getListDosen(array $filter = [])
+    {
+        return $this->call('GetListDosen', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getListPenugasanSemuaDosen(array $filter = [])
+    {
+        return $this->call('GetListPenugasanSemuaDosen', [
             'filter' => $filter['filter'] ?? '',
             'order' => $filter['order'] ?? '',
             'limit' => $filter['limit'] ?? 0,
@@ -272,15 +291,9 @@ class PddiktiClient
         ]);
     }
 
-    public function getListSkalaNilaiProdi(array $filter = [])
-    {
-        return $this->call('GetListSkalaNilaiProdi', [
-            'filter' => $filter['filter'] ?? '',
-            'order' => $filter['order'] ?? '',
-            'limit' => $filter['limit'] ?? 0,
-            'offset' => $filter['offset'] ?? 0,
-        ]);
-    }
+    // =========================================================================
+    // MAHASISWA & RIWAYAT PENDIDIKAN
+    // =========================================================================
 
     public function getCountMahasiswa(array $filter = [])
     {
@@ -299,23 +312,16 @@ class PddiktiClient
         ]);
     }
 
-    public function getCountMataKuliah(array $filter = [])
+    public function insertBiodataMahasiswa(array $data)
     {
-        return $this->call('GetCountMataKuliah', [
-            'filter' => $filter['filter'] ?? '',
-            'order' => $filter['order'] ?? '',
-            'limit' => $filter['limit'] ?? 0,
-            'offset' => $filter['offset'] ?? 0,
-        ]);
+        return $this->call('InsertBiodataMahasiswa', ['record' => $data]);
     }
 
-    public function getMataKuliah(array $filter = [])
+    public function updateBiodataMahasiswa(array $data)
     {
-        return $this->call('GetListMataKuliah', [
-            'filter' => $filter['filter'] ?? '',
-            'order' => $filter['order'] ?? '',
-            'limit' => $filter['limit'] ?? 0,
-            'offset' => $filter['offset'] ?? 0,
+        return $this->call('UpdateBiodataMahasiswa', [
+            'key' => $data['key'],
+            'record' => $data['record'],
         ]);
     }
 
@@ -346,33 +352,75 @@ class PddiktiClient
         ]);
     }
 
-    public function insertBiodataMahasiswa(array $data)
-    {
-        return $this->call('InsertBiodataMahasiswa', ['record' => $data]);
-    }
-
-    public function updateBiodataMahasiswa(array $data)
-    {
-        return $this->call('UpdateBiodataMahasiswa', [
-            'key' => $data['key'],
-            'record' => $data['record']
-        ]);
-    }
-
     public function insertRiwayatPendidikanMahasiswa(array $data)
     {
         return $this->call('InsertRiwayatPendidikanMahasiswa', ['record' => $data]);
     }
 
-
-    public function insertMatkulKurikulum(array $data)
+    public function updateRiwayatPendidikanMahasiswa(array $key, array $data)
     {
-        return $this->call('InsertMatkulKurikulum', ['record' => $data]);
+        return $this->call('UpdateRiwayatPendidikanMahasiswa', [
+            'key' => $key,
+            'record' => $data,
+        ]);
+    }
+
+    // =========================================================================
+    // MATA KULIAH
+    // =========================================================================
+
+    public function getCountMataKuliah(array $filter = [])
+    {
+        return $this->call('GetCountMataKuliah', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getListMatkul(array $filter = [])
+    {
+        return $this->call('GetListMataKuliah', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getMataKuliah(array $filter = [])
+    {
+        return $this->call('GetListMataKuliah', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
     }
 
     public function insertMataKuliah(array $data)
     {
         return $this->call('InsertMataKuliah', ['record' => $data]);
+    }
+
+    public function updateMataKuliah(array $key, array $data)
+    {
+        return $this->call('UpdateMataKuliah', [
+            'key' => $key,
+            'record' => $data,
+        ]);
+    }
+
+    // =========================================================================
+    // KURIKULUM
+    // =========================================================================
+
+    public function getCountKurikulum(array $filter = [])
+    {
+        return $this->call('GetCountKurikulum', [
+            'filter' => $filter['filter'] ?? '',
+        ]);
     }
 
     public function getKurikulum(array $filter = [])
@@ -385,22 +433,53 @@ class PddiktiClient
         ]);
     }
 
-    public function getCountKurikulum(array $filter = [])
-    {
-        return $this->call('GetCountKurikulum', [
-            'filter' => $filter['filter'] ?? '',
-        ]);
-    }
-
     public function insertKurikulum(array $data)
     {
         return $this->call('InsertKurikulum', ['record' => $data]);
     }
 
-    public function insertKelasKuliah(array $data)
+    public function updateKurikulum(array $key, array $data)
     {
-        return $this->call('InsertKelasKuliah', ['record' => $data]);
+        return $this->call('UpdateKurikulum', [
+            'key' => $key,
+            'record' => $data,
+        ]);
     }
+
+    public function getMatkulKurikulum(array $filter = [])
+    {
+        return $this->call('GetMatkulKurikulum', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+
+    }
+
+    public function getCountMatkulKurikulum(array $filter = [])
+    {
+        return $this->call('GetCountMatkulKurikulum', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function insertMatkulKurikulum(array $data)
+    {
+        return $this->call('InsertMatkulKurikulum', ['record' => $data]);
+    }
+
+    public function deleteMatkulKurikulum(array $data)
+    {
+        return $this->call('DeleteMatkulKurikulum', ['key' => $data]);
+    }
+
+    // =========================================================================
+    // KELAS PERKULIAHAN
+    // =========================================================================
 
     public function getCountKelasKuliah(array $filter = [])
     {
@@ -429,6 +508,11 @@ class PddiktiClient
         ]);
     }
 
+    public function insertKelasKuliah(array $data)
+    {
+        return $this->call('InsertKelasKuliah', ['record' => $data]);
+    }
+
     public function insertPesertaKelasKuliah(array $data)
     {
         return $this->call('InsertPesertaKelasKuliah', ['record' => $data]);
@@ -439,17 +523,15 @@ class PddiktiClient
         return $this->call('InsertDosenPengajarKelasKuliah', ['record' => $data]);
     }
 
-    public function updateNilaiPerkuliahanKelas(array $key, array $data)
-    {
-        return $this->call('UpdateNilaiPerkuliahanKelas', [
-            'key' => $key,
-            'record' => $data
-        ]);
-    }
+    // =========================================================================
+    // PERKULIAHAN MAHASISWA & NILAI
+    // =========================================================================
 
-    public function insertAktivitasKuliahMahasiswa(array $data)
+    public function getCountAktivitasKuliahMahasiswa(array $filter = [])
     {
-        return $this->call('InsertAktivitasKuliahMahasiswa', ['record' => $data]);
+        return $this->call('GetCountPerkuliahanMahasiswa', [
+            'filter' => $filter['filter'] ?? '',
+        ]);
     }
 
     public function getListPerkuliahanMahasiswa(array $filter = [])
@@ -462,26 +544,16 @@ class PddiktiClient
         ]);
     }
 
-    public function getCountAktivitasKuliahMahasiswa(array $filter = [])
+    public function insertAktivitasKuliahMahasiswa(array $data)
     {
-        return $this->call('GetCountPerkuliahanMahasiswa', [
-            'filter' => $filter['filter'] ?? '',
-        ]);
+        return $this->call('InsertAktivitasKuliahMahasiswa', ['record' => $data]);
     }
 
-    public function updateRiwayatPendidikanMahasiswa(array $key, array $data)
+    public function updateNilaiPerkuliahanKelas(array $key, array $data)
     {
-        return $this->call('UpdateRiwayatPendidikanMahasiswa', [
+        return $this->call('UpdateNilaiPerkuliahanKelas', [
             'key' => $key,
-            'record' => $data
+            'record' => $data,
         ]);
     }
-
-    public function getDictionary(array $filter = [])
-    {
-        return $this->call('GetDictionary', [
-            'fungsi' => $filter['fungsi'] ?? '',
-        ]);
-    }
-
 }

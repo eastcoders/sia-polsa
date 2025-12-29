@@ -2,13 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Prodi;
 use App\Models\Kurikulum;
-use Illuminate\Support\Str;
-use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Prodi;
 use Faker\Factory as Faker;
-
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class KurikulumSeeder extends Seeder
 {
@@ -22,7 +20,7 @@ class KurikulumSeeder extends Seeder
         for ($i = 1; $i <= 10; $i++) {
             Kurikulum::create([
                 'id_kurikulum' => Str::uuid()->toString(),
-                'nama_kurikulum' => 'KL-' . $faker->numberBetween(1, 999999),
+                'nama_kurikulum' => 'KL-'.$faker->numberBetween(1, 999999),
                 'id_prodi' => Prodi::inRandomOrder()->value('id_prodi'),
                 'id_semester' => '20251',
                 'jumlah_sks_wajib' => '10',

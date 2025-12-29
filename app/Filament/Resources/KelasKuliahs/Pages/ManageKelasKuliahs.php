@@ -3,7 +3,9 @@
 namespace App\Filament\Resources\KelasKuliahs\Pages;
 
 use App\Filament\Resources\KelasKuliahs\KelasKuliahResource;
+use App\Jobs\DispatchSyncKelasKuliah;
 use App\Models\MataKuliah;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
 use Illuminate\Support\Str;
@@ -28,6 +30,18 @@ class ManageKelasKuliahs extends ManageRecords
                     $data['sks_sim'] = $idMatkul->sks_praktek_lapangan;
 
                     return $data;
+                }),
+            Action::make('sync_from_feeder')
+                ->label('Clone Data')
+                ->icon('heroicon-o-cloud-arrow-down')
+                ->color('info')
+                ->requiresConfirmation()
+                ->action(function () {
+                    DispatchSyncKelasKuliah::dispatch();
+                    \Filament\Notifications\Notification::make()
+                        ->title('Sync dijadwalkan')
+                        ->success()
+                        ->send();
                 }),
         ];
     }

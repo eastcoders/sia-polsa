@@ -4,7 +4,6 @@ namespace App\Livewire;
 
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\DB;
-use Livewire\Attributes\Reactive;
 use Livewire\Component;
 
 /**
@@ -70,6 +69,7 @@ class SyncProgressPanel extends Component
                     ? round(($batch->total_jobs - $batch->pending_jobs) / $batch->total_jobs * 100, 1)
                     : 0;
                 $batch->processed_jobs = $batch->total_jobs - $batch->pending_jobs;
+
                 return $batch;
             })
             ->toArray();
@@ -85,6 +85,7 @@ class SyncProgressPanel extends Component
                 $batch->progress = 100;
                 $batch->processed_jobs = $batch->total_jobs;
                 $batch->has_failures = $batch->failed_jobs > 0;
+
                 return $batch;
             })
             ->toArray();

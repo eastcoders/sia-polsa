@@ -25,8 +25,7 @@ class PushNilaiPerkuliahanJob implements ShouldQueue
      */
     public function __construct(
         public NilaiKelasPerkuliahan $nilaiPerkuliahan
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -39,7 +38,7 @@ class PushNilaiPerkuliahanJob implements ShouldQueue
             $kelasKuliah = $this->nilaiPerkuliahan->kelasKuliah;
 
             // 2. Cek apakah Kelas Kuliah memiliki id_server
-            if (!$kelasKuliah || empty($kelasKuliah->id_server)) {
+            if (! $kelasKuliah || empty($kelasKuliah->id_server)) {
                 if ($kelasKuliah) {
                     // Dispatch PushKelasKuliahJob terlebih dahulu
                     PushKelasKuliahJob::dispatch($kelasKuliah);
@@ -51,6 +50,7 @@ class PushNilaiPerkuliahanJob implements ShouldQueue
 
                 // Release job untuk retry nanti (setelah 30 detik)
                 $this->release(30);
+
                 return;
             }
 
@@ -60,11 +60,9 @@ class PushNilaiPerkuliahanJob implements ShouldQueue
                 $this->nilaiPerkuliahan->id_registrasi_mahasiswa
             )->first();
 
-
-
-            if (!$riwayatPendidikan || empty($riwayatPendidikan->id_server)) {
+            if (! $riwayatPendidikan || empty($riwayatPendidikan->id_server)) {
                 $message = "Nilai Perkuliahan {$this->nilaiPerkuliahan->id} tidak memiliki Riwayat Pendidikan dengan id_server (id_registrasi_mahasiswa: {$this->nilaiPerkuliahan->id_registrasi_mahasiswa}).";
-                Log::warning("PushNilaiPerkuliahanJob: " . $message);
+                Log::warning('PushNilaiPerkuliahanJob: '.$message);
 
                 // Mark as failed
                 $this->nilaiPerkuliahan->update([
@@ -82,6 +80,7 @@ class PushNilaiPerkuliahanJob implements ShouldQueue
                 $this->nilaiPerkuliahan->nilai_indeks === null
             ) {
                 Log::info("PushNilaiPerkuliahanJob: Skip push nilai {$this->nilaiPerkuliahan->id} - semua nilai kosong.");
+
                 return;
             }
 
@@ -100,7 +99,6 @@ class PushNilaiPerkuliahanJob implements ShouldQueue
 
             // 7. Call API
             $response = $client->updateNilaiPerkuliahanKelas($key, $data);
-
 
             // 7. Update status sync
             $this->nilaiPerkuliahan->update([
@@ -122,7 +120,7 @@ class PushNilaiPerkuliahanJob implements ShouldQueue
                 'sync_message' => $e->getMessage(),
             ]);
 
-            Log::error("PushNilaiPerkuliahanJob: Failed to push nilai perkuliahan {$this->nilaiPerkuliahan->id}: " . $e->getMessage());
+            Log::error("PushNilaiPerkuliahanJob: Failed to push nilai perkuliahan {$this->nilaiPerkuliahan->id}: ".$e->getMessage());
 
             throw $e;
         }

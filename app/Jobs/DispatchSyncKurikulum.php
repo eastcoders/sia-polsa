@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Jobs\SyncKurikulumJob;
 use App\Services\PddiktiClient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -21,8 +20,7 @@ class DispatchSyncKurikulum implements ShouldQueue
      */
     public function __construct(
         public array $filter = []
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -38,6 +36,7 @@ class DispatchSyncKurikulum implements ShouldQueue
 
             if ($totalData === 0) {
                 Log::info('No kurikulum data to sync.');
+
                 return;
             }
 
@@ -49,17 +48,23 @@ class DispatchSyncKurikulum implements ShouldQueue
                 $jobs[] = new SyncKurikulumJob($batchSize, $offset, $this->filter);
             }
 
+            $filter = $this->filter;
+
             // 3. Dispatch Batch
             Bus::batch($jobs)
-                ->name('Sync Kurikulum (' . $totalData . ' records)')
+                ->name('Sync Kurikulum ('.$totalData.' records)')
                 ->onQueue('default')
                 ->allowFailures()
+                ->then(function (\Illuminate\Bus\Batch $batch) use ($filter) {
+                    Log::info('Dispatching DispatchSyncMatkulKurikulum...');
+                    DispatchSyncMatkulKurikulum::dispatch($filter);
+                })
                 ->dispatch();
 
             Log::info("Dispatched batch for {$totalData} kurikulum records.");
 
         } catch (\Exception $e) {
-            Log::error("Failed to dispatch sync kurikulum: " . $e->getMessage());
+            Log::error('Failed to dispatch sync kurikulum: '.$e->getMessage());
             throw $e;
         }
     }

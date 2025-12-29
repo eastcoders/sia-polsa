@@ -3,18 +3,18 @@
 namespace App\Filament\Resources\BiodataMahasiswas\Pages;
 
 use App\Filament\Resources\BiodataMahasiswas\BiodataMahasiswaResource;
+use App\Models\PesertaKelasKuliah;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
-use Filament\Support\Icons\Heroicon;
-use App\Models\PesertaKelasKuliah;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
 
 class KrsMahasiswa extends Page implements HasTable
 {
@@ -41,6 +41,7 @@ class KrsMahasiswa extends Page implements HasTable
     {
         $this->record = $this->resolveRecord($record);
     }
+
     public function table(Table $table): Table
     {
         return $table
@@ -48,7 +49,7 @@ class KrsMahasiswa extends Page implements HasTable
                 \Filament\Tables\Filters\SelectFilter::make('semester')
                     ->relationship('kelasKuliah.semester', 'nama_semester')
                     ->label('Semester')
-                    ->default(fn() => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', 1)->value('id_semester'))
+                    ->default(fn () => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', 1)->value('id_semester'))
                     ->preload()
                     ->searchable(),
             ])

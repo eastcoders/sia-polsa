@@ -20,8 +20,7 @@ class PushDosenPengajarJob implements ShouldQueue
      */
     public function __construct(
         public DosenPengajarKelasKuliah $dosenPengajar
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -40,11 +39,12 @@ class PushDosenPengajarJob implements ShouldQueue
 
                 // Release job to retry later (after 30 seconds)
                 $this->release(30);
+
                 return;
             }
 
             // 2. Determine id_registrasi_dosen - use id_dosen_alias if exists
-            $idRegistrasiDosen = !empty($this->dosenPengajar->id_dosen_alias)
+            $idRegistrasiDosen = ! empty($this->dosenPengajar->id_dosen_alias)
                 ? $this->dosenPengajar->id_dosen_alias
                 : $this->dosenPengajar->id_registrasi_dosen;
 
@@ -66,7 +66,7 @@ class PushDosenPengajarJob implements ShouldQueue
             ]);
 
         } catch (\Exception $e) {
-            Log::error("PushDosenPengajarJob: Failed to push dosen pengajar {$this->dosenPengajar->id}: " . $e->getMessage());
+            Log::error("PushDosenPengajarJob: Failed to push dosen pengajar {$this->dosenPengajar->id}: ".$e->getMessage());
 
             throw $e;
         }

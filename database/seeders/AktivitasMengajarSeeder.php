@@ -3,13 +3,12 @@
 namespace Database\Seeders;
 
 use App\Models\Dosen;
-use App\Models\KelasKuliah;
-use Faker\Factory as Faker;
-use Illuminate\Support\Str;
-use App\Models\PenugasanDosen;
-use Illuminate\Database\Seeder;
 use App\Models\DosenPengajarKelasKuliah;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\KelasKuliah;
+use App\Models\PenugasanDosen;
+use Faker\Factory as Faker;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class AktivitasMengajarSeeder extends Seeder
 {
@@ -44,7 +43,7 @@ class AktivitasMengajarSeeder extends Seeder
                 'realisasi_minggu_pertemuan' => 0,
                 'id_jenis_evaluasi' => $faker->randomElement(['1', '2', '3', '4']),
                 'punya_alias' => $dosen_alias,
-                'id_dosen_alias' => $dosenAlias->id_dosen ?? null
+                'id_dosen_alias' => $dosenAlias->id_dosen ?? null,
             ]);
         }
         // }

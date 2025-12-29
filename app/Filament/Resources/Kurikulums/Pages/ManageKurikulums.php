@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\Kurikulums\Pages;
 
+use App\Filament\Resources\Kurikulums\KurikulumResource;
 use App\Jobs\DispatchSyncKurikulum;
-use App\Jobs\SyncKurikulumJob;
-use Illuminate\Support\Str;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ManageRecords;
-use App\Filament\Resources\Kurikulums\KurikulumResource;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Str;
 
 class ManageKurikulums extends ManageRecords
 {
@@ -18,6 +18,8 @@ class ManageKurikulums extends ManageRecords
     {
         return [
             CreateAction::make()
+                ->label('Tambah Data')
+                ->icon(Heroicon::Plus)
                 ->closeModalByClickingAway(false)
                 ->mutateDataUsing(function (array $data) {
                     $data['id_kurikulum'] = Str::uuid()->toString();
@@ -25,9 +27,9 @@ class ManageKurikulums extends ManageRecords
                     return $data;
                 }),
             Action::make('sync_from_feeder')
-                ->label('Sync Kurikulum')
+                ->label('Clone Data')
                 ->icon('heroicon-o-cloud-arrow-down')
-                ->color('warning')
+                ->color('info')
                 ->requiresConfirmation()
                 ->action(function () {
                     DispatchSyncKurikulum::dispatch();

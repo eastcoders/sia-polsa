@@ -7,7 +7,6 @@ use App\Models\PesertaKelasKuliah;
 use App\Models\Prodi;
 use App\Models\RiwayatPendidikan;
 use App\Models\Semester;
-use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\Concerns\InteractsWithActions;
 use Filament\Actions\Contracts\HasActions;
@@ -36,7 +35,7 @@ class ListKelasKuliah extends Component implements HasActions, HasSchemas, HasTa
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn(): Builder => KelasKuliah::with(['matkul', 'semester', 'prodi']))
+            ->query(fn (): Builder => KelasKuliah::with(['matkul', 'semester', 'prodi']))
             ->columns([
                 TextColumn::make('matkul.kode_mata_kuliah')
                     ->label('Kode MK')
@@ -66,20 +65,22 @@ class ListKelasKuliah extends Component implements HasActions, HasSchemas, HasTa
                             ->unique() // Just in case, though names should be unique enough or use ID
                             ->toArray()
                     )
-                    ->getOptionLabelFromRecordUsing(fn(Prodi $record) => $record->programStudiLengkap) // Filament 3 style but for arrays we use options() usually.
+                    ->getOptionLabelFromRecordUsing(fn (Prodi $record) => $record->programStudiLengkap) // Filament 3 style but for arrays we use options() usually.
                     // Let's stick to options logic from reference:
                     // pluck('nama_program_studi', 'id_prodi') might be ambiguous if names are same.
                     // Reference ListMahasiswa used pluck('nama_program_studi', 'id_prodi').
                     // But here I'll try to match the student's prodi default.
                     ->default(function () {
                         $riwayat = RiwayatPendidikan::find($this->id_registrasi_mahasiswa);
+
                         return $riwayat?->id_prodi;
                     })
                     ->query(function (Builder $query, array $data): Builder {
                         $value = $data['value'] ?? null;
-                        if (!empty($value)) {
+                        if (! empty($value)) {
                             $query->where('id_prodi', $value);
                         }
+
                         return $query;
                     }),
 
@@ -97,13 +98,14 @@ class ListKelasKuliah extends Component implements HasActions, HasSchemas, HasTa
                             ->where('id_tahun_ajaran', '>=', now()->year)
                             ->orderBy('id_tahun_ajaran', 'asc')
                             ->first()
-                                ?->id_semester;
+                            ?->id_semester;
                     })
                     ->query(function (Builder $query, array $data): Builder {
                         $value = $data['value'] ?? null;
-                        if (!empty($value)) {
+                        if (! empty($value)) {
                             $query->where('id_semester', $value);
                         }
+
                         return $query;
                     }),
             ])
@@ -124,7 +126,8 @@ class ListKelasKuliah extends Component implements HasActions, HasSchemas, HasTa
                 $exists = PesertaKelasKuliah::where('id_registrasi_mahasiswa', $this->id_registrasi_mahasiswa)
                     ->where('id_kelas_kuliah', $record->id_kelas_kuliah)
                     ->exists();
-                return !$exists;
+
+                return ! $exists;
             });
     }
 
@@ -137,8 +140,8 @@ class ListKelasKuliah extends Component implements HasActions, HasSchemas, HasTa
     {
         $newSks = $records->sum('sks_mk');
 
-        // Ensure all records belong to the same semester if necessary, 
-        // or just calculate SKS per semester. 
+        // Ensure all records belong to the same semester if necessary,
+        // or just calculate SKS per semester.
         // Usually KRS is for ONE specific semester (the active one).
         // But the table filter lets you select any semester.
         // If user selects classes from Semester A and Semester B simultaneously, validation gets tricky.
@@ -156,7 +159,7 @@ class ListKelasKuliah extends Component implements HasActions, HasSchemas, HasTa
                             $q->where('id_semester', $idSemester);
                         })
                         ->get()
-                        ->sum(fn($peserta) => $peserta->kelasKuliah->sks_mk ?? 0);
+                        ->sum(fn ($peserta) => $peserta->kelasKuliah->sks_mk ?? 0);
 
                     $semesterSksToAdd = $classes->sum('sks_mk');
                     $totalSks = $existingSks + $semesterSksToAdd;
@@ -177,7 +180,7 @@ class ListKelasKuliah extends Component implements HasActions, HasSchemas, HasTa
 
             Notification::make()
                 ->title('Berhasil')
-                ->body(count($records) . ' kelas berhasil ditambahkan.')
+                ->body(count($records).' kelas berhasil ditambahkan.')
                 ->success()
                 ->send();
 
@@ -188,7 +191,7 @@ class ListKelasKuliah extends Component implements HasActions, HasSchemas, HasTa
                 ->danger()
                 ->send();
         } catch (\Throwable $e) {
-            Log::error('Gagal mengambil kelas: ' . $e->getMessage());
+            Log::error('Gagal mengambil kelas: '.$e->getMessage());
             Notification::make()
                 ->title('Gagal')
                 ->body('Terjadi kesalahan sistem.')

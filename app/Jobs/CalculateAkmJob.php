@@ -22,8 +22,7 @@ class CalculateAkmJob implements ShouldQueue
      */
     public function __construct(
         public string $id_registrasi_mahasiswa
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -36,13 +35,13 @@ class CalculateAkmJob implements ShouldQueue
         $nilais = NilaiKelasPerkuliahan::with(['kelasKuliah.matkul', 'kelasKuliah.semester'])
             ->where('id_registrasi_mahasiswa', $this->id_registrasi_mahasiswa)
             ->get()
-            ->groupBy(fn($item) => $item->kelasKuliah->id_semester)
+            ->groupBy(fn ($item) => $item->kelasKuliah->id_semester)
             ->sortKeys();
 
         $totalSksKumulatif = 0;
         $totalMutuKumulatif = 0;
 
-        DB::transaction(function () use ($nilais, $riwayat, &$totalSksKumulatif, &$totalMutuKumulatif) {
+        DB::transaction(function () use ($nilais, &$totalSksKumulatif, &$totalMutuKumulatif) {
             foreach ($nilais as $idSemester => $groupNilai) {
                 // Kalkulasi Semester Ini
                 $sksSemester = 0;

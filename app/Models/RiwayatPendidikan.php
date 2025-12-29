@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class RiwayatPendidikan extends Model
 {
     use SoftDeletes;
+
     protected $guarded = [];
 
     public function prodi()

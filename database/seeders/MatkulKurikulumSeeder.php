@@ -5,10 +5,8 @@ namespace Database\Seeders;
 use App\Models\Kurikulum;
 use App\Models\MataKuliah;
 use App\Models\MatkulKurikulum;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
-
+use Illuminate\Database\Seeder;
 
 class MatkulKurikulumSeeder extends Seeder
 {

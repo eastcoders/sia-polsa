@@ -24,9 +24,7 @@ class SyncKurikulumJob implements ShouldQueue
         public int $limit,
         public int $offset,
         public array $filter = []
-    ) {
-
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -50,10 +48,10 @@ class SyncKurikulumJob implements ShouldQueue
             foreach ($data as $row) {
                 try {
                     DB::transaction(function () use ($row) {
-                        Kurikulum::updateOrCreate(
-                            [
-                                'id_server' => $row['id_kurikulum'],
-                            ],
+
+                        $existing = Kurikulum::where('id_server', $row['id_kurikulum'])->first();
+
+                        $updateData =
                             [
                                 'nama_kurikulum' => $row['nama_kurikulum'],
                                 'id_prodi' => $row['id_prodi'],
@@ -64,13 +62,23 @@ class SyncKurikulumJob implements ShouldQueue
                                 'sync_at' => now(),
                                 'sync_status' => 'synced',
                                 'sync_message' => null,
-                            ]
+                            ];
+
+                        if (! $existing || empty($existing->id_kurikulum)) {
+                            $updateData['id_kurikulum'] = $row['id_kurikulum'];
+                        }
+
+                        Kurikulum::updateOrCreate(
+                            [
+                                'id_server' => $row['id_kurikulum'],
+                            ],
+                            $updateData
                         );
                     });
                     $successCount++;
                 } catch (\Exception $e) {
                     $errorCount++;
-                    Log::warning("SyncKurikulumJob: Failed to sync record {$row['id_kurikulum']}: " . $e->getMessage());
+                    Log::warning("SyncKurikulumJob: Failed to sync record {$row['id_kurikulum']}: ".$e->getMessage());
                     // Continue to next record - don't throw
                 }
             }
@@ -78,7 +86,7 @@ class SyncKurikulumJob implements ShouldQueue
             Log::info("SyncKurikulumJob offset {$this->offset}: {$successCount} success, {$errorCount} errors.");
 
         } catch (\Exception $e) {
-            Log::error("Failed to fetch data for sync kurikulum offset {$this->offset}: " . $e->getMessage());
+            Log::error("Failed to fetch data for sync kurikulum offset {$this->offset}: ".$e->getMessage());
             throw $e; // Re-throw only for API fetch errors
         }
 

@@ -2,14 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Prodi;
-use App\Models\MataKuliah;
 use App\Models\KelasKuliah;
-use Illuminate\Support\Str;
-use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\MataKuliah;
 use Faker\Factory as Faker;
-
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class KelasKuliahSeeder extends Seeder
 {
@@ -29,7 +26,7 @@ class KelasKuliahSeeder extends Seeder
                 'id_kelas_kuliah' => Str::uuid()->toString(),
                 'id_prodi' => $matkul->id_prodi,
                 'id_semester' => '20251',
-                'nama_kelas_kuliah' => 'CLS-' . $faker->numberBetween(1, 10),
+                'nama_kelas_kuliah' => 'CLS-'.$faker->numberBetween(1, 10),
                 'id_matkul' => $matkul->id_matkul,
                 'lingkup' => $faker->randomElement(['1', '2', '3']),
                 'mode' => $faker->randomElement(['O', 'F', 'M']),

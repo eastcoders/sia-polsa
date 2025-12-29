@@ -2,12 +2,13 @@
 
 namespace App\Filament\Resources\MataKuliahs\Pages;
 
-use Illuminate\Support\Str;
+use App\Filament\Resources\MataKuliahs\MataKuliahResource;
+use App\Jobs\DispatchSyncMataKuliah;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
-use App\Jobs\DispatchSyncMataKuliah;
 use Filament\Resources\Pages\ManageRecords;
-use App\Filament\Resources\MataKuliahs\MataKuliahResource;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Str;
 
 class ManageMataKuliahs extends ManageRecords
 {
@@ -17,6 +18,8 @@ class ManageMataKuliahs extends ManageRecords
     {
         return [
             CreateAction::make()
+                ->label('Tambah Data')
+                ->icon(Heroicon::Plus)
                 ->closeModalByClickingAway(false)
                 ->mutateDataUsing(function (array $data) {
                     $data['id_matkul'] = Str::uuid()->toString();
@@ -24,9 +27,9 @@ class ManageMataKuliahs extends ManageRecords
                     return $data;
                 }),
             Action::make('sync_from_feeder')
-                ->label('Sync Mata Kuliah')
+                ->label('Clone Data')
                 ->icon('heroicon-o-cloud-arrow-down')
-                ->color('warning')
+                ->color('info')
                 ->requiresConfirmation()
                 ->action(function () {
                     DispatchSyncMataKuliah::dispatch();

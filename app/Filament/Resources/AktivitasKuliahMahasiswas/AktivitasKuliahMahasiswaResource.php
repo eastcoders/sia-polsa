@@ -2,27 +2,25 @@
 
 namespace App\Filament\Resources\AktivitasKuliahMahasiswas;
 
-use BackedEnum;
-use Filament\Forms;
-use Filament\Tables;
-use App\Models\Semester;
-use Filament\Tables\Table;
-use Filament\Actions\Action;
-use Filament\Schemas\Schema;
+use App\Filament\Resources\AktivitasKuliahMahasiswas\Pages\ManageAktivitasKuliahMahasiswas;
 use App\Jobs\CalculateAkmJob;
+use App\Jobs\PushAktivitasKuliahMahasiswaJob;
+use App\Models\AktivitasKuliahMahasiswa;
+use App\Models\Semester;
+use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
-use Filament\Resources\Resource;
-use Filament\Support\Icons\Heroicon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Tables\Columns\TextColumn;
-use App\Models\AktivitasKuliahMahasiswa;
+use Filament\Forms;
 use Filament\Notifications\Notification;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Collection;
-use App\Jobs\PushAktivitasKuliahMahasiswaJob;
+use Filament\Resources\Resource;
 use Filament\Schemas\Components\Utilities\Set;
-use App\Filament\Resources\AktivitasKuliahMahasiswas\Pages\ManageAktivitasKuliahMahasiswas;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Collection;
+use UnitEnum;
 
 class AktivitasKuliahMahasiswaResource extends Resource
 {
@@ -30,7 +28,8 @@ class AktivitasKuliahMahasiswaResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Aktivitas Kuliah';
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedAcademicCap;
+    protected static string|UnitEnum|null $navigationGroup = 'Perkuliahan';
+
     protected static ?int $navigationSort = 5;
 
     public static function form(Schema $schema): Schema
@@ -56,6 +55,7 @@ class AktivitasKuliahMahasiswaResource extends Resource
                     })
                     ->getOptionLabelUsing(function ($value) {
                         $item = \App\Models\RiwayatPendidikan::with('mahasiswa')->find($value);
+
                         return $item ? "{$item->nim} - {$item->mahasiswa->nama_lengkap}" : null;
                     })
                     ->live()
@@ -77,7 +77,7 @@ class AktivitasKuliahMahasiswaResource extends Resource
                     ->required()
                     ->native(false)
                     ->options(Semester::where('a_periode_aktif', '1')->orderBy('id_semester', 'desc')->pluck('nama_semester', 'id_semester'))
-                    ->default(fn() => session('active_semester_id') ?? Semester::where('a_periode_aktif', '1')->value('id_semester')),
+                    ->default(fn () => session('active_semester_id') ?? Semester::where('a_periode_aktif', '1')->value('id_semester')),
                 Forms\Components\Select::make('id_status_mahasiswa')
                     ->label('Status Mahasiswa')
                     ->required()
@@ -143,16 +143,16 @@ class AktivitasKuliahMahasiswaResource extends Resource
                 TextColumn::make('id_server')
                     ->label('Sync Status')
                     ->badge()
-                    ->formatStateUsing(fn($state) => $state ? 'Synced' : 'Pending')
+                    ->formatStateUsing(fn ($state) => $state ? 'Synced' : 'Pending')
                     ->colors([
-                        'success' => fn($state) => $state !== null,
-                        'warning' => fn($state) => $state === null,
+                        'success' => fn ($state) => $state !== null,
+                        'warning' => fn ($state) => $state === null,
                     ]),
             ])
             ->filters([
                 SelectFilter::make('id_semester')
                     ->label('Semester')
-                    ->options(fn() => Semester::orderBy('id_semester', 'desc')->take(10)->pluck('nama_semester', 'id_semester')->toArray()),
+                    ->options(fn () => Semester::orderBy('id_semester', 'desc')->take(10)->pluck('nama_semester', 'id_semester')->toArray()),
                 SelectFilter::make('id_status_mahasiswa')
                     ->label('Status')
                     ->options([

@@ -3,7 +3,6 @@
 namespace App\Jobs;
 
 use App\Models\BiodataMahasiswa;
-use App\Models\RiwayatPendidikan;
 use App\Services\PddiktiClient;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
@@ -25,8 +24,7 @@ class SyncMahasiswaPageJob implements ShouldQueue
         public int $limit,
         public int $offset,
         public array $filter = []
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -101,7 +99,7 @@ class SyncMahasiswaPageJob implements ShouldQueue
                         ];
 
                         // Strategi ID aman: Hanya set id_mahasiswa jika record baru atau kolom kosong
-                        if (!$existing || empty($existing->id_mahasiswa)) {
+                        if (! $existing || empty($existing->id_mahasiswa)) {
                             $updateData['id_mahasiswa'] = $row['id_mahasiswa'];
                         }
 
@@ -113,7 +111,7 @@ class SyncMahasiswaPageJob implements ShouldQueue
                     $successCount++;
                 } catch (\Exception $e) {
                     $errorCount++;
-                    Log::warning("SyncMahasiswaPageJob: Failed to sync record {$row['id_mahasiswa']}: " . $e->getMessage());
+                    Log::warning("SyncMahasiswaPageJob: Failed to sync record {$row['id_mahasiswa']}: ".$e->getMessage());
                     // Continue to next record - don't throw
                 }
             }
@@ -121,7 +119,7 @@ class SyncMahasiswaPageJob implements ShouldQueue
             Log::info("SyncMahasiswaPageJob offset {$this->offset}: {$successCount} success, {$errorCount} errors.");
 
         } catch (\Exception $e) {
-            Log::error("Failed to fetch data for sync page offset {$this->offset}: " . $e->getMessage());
+            Log::error("Failed to fetch data for sync page offset {$this->offset}: ".$e->getMessage());
             throw $e; // Re-throw only for API fetch errors
         }
     }

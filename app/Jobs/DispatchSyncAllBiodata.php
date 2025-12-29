@@ -2,14 +2,13 @@
 
 namespace App\Jobs;
 
-use App\Jobs\SyncWilayahJob;
 use Illuminate\Bus\Queueable;
-use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Queue\SerializesModels;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Dispatch semua sync job untuk data master biodata secara berurutan.
@@ -24,13 +23,13 @@ class DispatchSyncAllBiodata implements ShouldQueue
 
         // Chain semua sync job secara berurutan
         Bus::chain([
-            new SyncAgamaJob(),
-            new SyncPekerjaanJob(),
-            new SyncPenghasilanJob(),
-            new SyncJenjangPendidikanJob(),
-            new SyncAlatTransportasiJob(),
-            new SyncJenisTinggalJob(),
-            new SyncWilayahJob(),
+            new SyncAgamaJob,
+            new SyncPekerjaanJob,
+            new SyncPenghasilanJob,
+            new SyncJenjangPendidikanJob,
+            new SyncAlatTransportasiJob,
+            new SyncJenisTinggalJob,
+            new SyncWilayahJob,
         ])->onQueue('default')
             ->dispatch();
 

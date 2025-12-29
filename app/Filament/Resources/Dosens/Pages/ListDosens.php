@@ -8,6 +8,7 @@ use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Icons\Heroicon;
 
 class ListDosens extends ListRecords
 {
@@ -16,7 +17,9 @@ class ListDosens extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Tambah Data ')
+                ->icon(Heroicon::Plus),
             Action::make('sync')
                 ->label('Sinkronisasi Dosen')
                 ->button()

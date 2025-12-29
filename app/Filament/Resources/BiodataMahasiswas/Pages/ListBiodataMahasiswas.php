@@ -5,6 +5,7 @@ namespace App\Filament\Resources\BiodataMahasiswas\Pages;
 use App\Filament\Resources\BiodataMahasiswas\BiodataMahasiswaResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Support\Icons\Heroicon;
 
 class ListBiodataMahasiswas extends ListRecords
 {
@@ -13,7 +14,9 @@ class ListBiodataMahasiswas extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            CreateAction::make(),
+            CreateAction::make()
+                ->label('Tambah Data')
+                ->icon(Heroicon::Plus),
         ];
     }
 }

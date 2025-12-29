@@ -2,28 +2,28 @@
 
 namespace App\Filament\Resources\MataKuliahs;
 
-use App\Jobs\DispatchSyncMataKuliah;
-use UnitEnum;
-use App\Models\Prodi;
+use App\Filament\Resources\MataKuliahs\Pages\ManageMataKuliahs;
 use App\Models\MataKuliah;
-use Filament\Tables\Table;
+use App\Models\Prodi;
 use Filament\Actions\Action;
-use Filament\Schemas\Schema;
 use Filament\Actions\BulkAction;
-use Filament\Actions\EditAction;
-use Filament\Resources\Resource;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Forms\Components\Select;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use App\Filament\Resources\MataKuliahs\Pages\ManageMataKuliahs;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class MataKuliahResource extends Resource
 {
@@ -31,7 +31,7 @@ class MataKuliahResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'MataKuliah';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Perkulihan';
+    protected static string|UnitEnum|null $navigationGroup = 'Perkuliahan';
 
     protected static ?int $navigationSort = 1;
 
@@ -45,7 +45,7 @@ class MataKuliahResource extends Resource
                     ->required(),
                 Select::make('id_prodi')
                     ->label('Program Studi Pengampu')
-                    ->options(fn() => Prodi::orderBy('id')->pluck('nama_program_studi', 'id_prodi'))
+                    ->options(fn () => Prodi::orderBy('id')->pluck('nama_program_studi', 'id_prodi'))
                     ->required(),
                 Select::make('id_jenis_mata_kuliah')
                     ->label('Jenis Mata Kuliah')
@@ -80,7 +80,7 @@ class MataKuliahResource extends Resource
                     ->default(0)
                     ->required()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
                         'sks_mata_kuliah',
                         ($get('sks_tatap_muka') ?? 0) +
                         ($get('sks_praktek') ?? 0) +
@@ -94,7 +94,7 @@ class MataKuliahResource extends Resource
                     ->default(0)
                     ->required()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
                         'sks_mata_kuliah',
                         ($get('sks_tatap_muka') ?? 0) +
                         ($get('sks_praktek') ?? 0) +
@@ -108,7 +108,7 @@ class MataKuliahResource extends Resource
                     ->default(0)
                     ->required()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
                         'sks_mata_kuliah',
                         ($get('sks_tatap_muka') ?? 0) +
                         ($get('sks_praktek') ?? 0) +
@@ -122,7 +122,7 @@ class MataKuliahResource extends Resource
                     ->default(0)
                     ->required()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
                         'sks_mata_kuliah',
                         ($get('sks_tatap_muka') ?? 0) +
                         ($get('sks_praktek') ?? 0) +
@@ -149,29 +149,6 @@ class MataKuliahResource extends Resource
         return $table
             ->recordTitleAttribute('MataKuliah')
             ->columns([
-                TextColumn::make('id')
-                    ->label('#')
-                    ->rowIndex(),
-                TextColumn::make('nama_mata_kuliah')
-                    ->searchable(),
-                TextColumn::make('kode_mata_kuliah')
-                    ->searchable(),
-                TextColumn::make('prodi.programStudiLengkap')
-                    ->searchable(),
-
-                TextColumn::make('sks_mata_kuliah')
-                    ->label('Bobot Mata Kuliah (SKS)')
-                    ->searchable(),
-                TextColumn::make('id_jenis_mata_kuliah')
-                    ->label('Jenis Mata Kuliah')
-                    ->formatStateUsing(fn($state) => match ($state) {
-                        'A' => 'Wajib',
-                        'B' => 'Pilihan',
-                        'C' => 'Wajib Peminatan',
-                        'D' => 'Pilihan Peminatan',
-                        'S' => 'Tugas Akhir/Skripsi/Disertasi',
-                        default => $state, // atau 'Tidak Diketahui'
-                    }),
                 TextColumn::make('sync_status')
                     ->label('Status Sync')
                     ->badge()
@@ -180,8 +157,32 @@ class MataKuliahResource extends Resource
                         'warning' => ['pending', 'changed'],
                         'danger' => 'failed',
                     ])
-                    ->tooltip(fn($record) => $record->sync_message)
-                    ->sortable(),
+                    ->tooltip(fn ($record) => $record->sync_message),
+                TextColumn::make('id')
+                    ->label('#')
+                    ->rowIndex(),
+                TextColumn::make('kode_mata_kuliah')
+                    ->searchable()
+                    ->color('info'),
+                TextColumn::make('nama_mata_kuliah')
+                    ->searchable(),
+                TextColumn::make('prodi.nama_program_studi')
+                    ->searchable(),
+
+                TextColumn::make('sks_mata_kuliah')
+                    ->label('Bobot MK (SKS)')
+                    ->searchable(),
+                TextColumn::make('id_jenis_mata_kuliah')
+                    ->label('Jenis Mata Kuliah')
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'A' => 'Wajib',
+                        'B' => 'Pilihan',
+                        'C' => 'Wajib Peminatan',
+                        'D' => 'Pilihan Peminatan',
+                        'S' => 'Tugas Akhir/Skripsi/Disertasi',
+                        default => $state, // atau 'Tidak Diketahui'
+                    }),
+
                 TextColumn::make('sync_at')
                     ->label('Sync Terakhir')
                     ->dateTime()
@@ -198,7 +199,7 @@ class MataKuliahResource extends Resource
                             ->toArray()
                     )
                     ->query(function (Builder $query, array $data): Builder {
-                        if (!empty($data['values'])) {
+                        if (! empty($data['values'])) {
                             $query->whereIn('id_prodi', $data['values']);
                         }
 
@@ -208,22 +209,39 @@ class MataKuliahResource extends Resource
             ])
             ->recordActions([
                 EditAction::make()
+                    ->iconButton()
+                    ->tooltip('Edit Data')
+                    ->mutateDataUsing(function (array $data): array {
+                        $data['sync_status'] = 'changed';
+
+                        return $data;
+                    })
                     ->closeModalByClickingAway(false),
-                DeleteAction::make(),
+                DeleteAction::make()
+                    ->iconButton()
+                    ->tooltip('Delete Data'),
                 Action::make('push_to_feeder')
                     ->label('Push to Server')
+                    ->iconButton()
+                    ->tooltip('Push Data')
                     ->icon('heroicon-o-cloud-arrow-up')
                     ->color('warning')
                     ->requiresConfirmation()
                     ->action(function ($record) {
-                        $record->update(['sync_status' => 'changed']);
-                        \App\Jobs\PushMataKuliahJob::dispatch($record);
-                        \Filament\Notifications\Notification::make()
-                            ->title('Push dijadwalkan')
-                            ->success()
-                            ->send();
+                        if ($record->sync_status == 'changed') {
+                            \App\Jobs\PushMataKuliahJob::dispatch($record);
+                            \Filament\Notifications\Notification::make()
+                                ->title('Push dijadwalkan')
+                                ->success()
+                                ->send();
+                        } else {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Tidak ada yang perlu di push')
+                                ->danger()
+                                ->send();
+                        }
                     }),
-            ])
+            ], RecordActionsPosition::BeforeColumns)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

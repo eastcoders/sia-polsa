@@ -34,6 +34,13 @@ class EditKurikulum extends EditRecord implements HasTable
         ];
     }
 
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $data['sync_status'] = 'changed';
+
+        return $data;
+    }
+
     protected function getFormActions(): array
     {
         return [];
@@ -145,6 +152,14 @@ class EditKurikulum extends EditRecord implements HasTable
                     ->color('danger')
                     ->icon('heroicon-m-trash')
                     ->action(function (MatkulKurikulum $record) {
+                        $record->kurikulum->update([
+                            'sync_status' => 'changed',
+                        ]);
+
+                        $record->update([
+                            'sync_status' => 'changed',
+                        ]);
+
                         $record->delete();
                         Notification::make()
                             ->title('Berhasil Menghapus Mata Kuliah dari Kurikulum')

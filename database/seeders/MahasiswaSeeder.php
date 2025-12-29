@@ -3,22 +3,21 @@
 namespace Database\Seeders;
 
 use App\Models\Agama;
-use App\Models\Prodi;
-use App\Models\Wilayah;
-use App\Models\Semester;
-use App\Models\Pekerjaan;
-use App\Models\ProfilePT;
-use App\Models\JalurMasuk;
-use App\Models\Penghasilan;
-use Faker\Factory as Faker;
-use Illuminate\Support\Str;
-use App\Models\JenisTinggal;
-use Illuminate\Database\Seeder;
 use App\Models\AlatTransportasi;
 use App\Models\BiodataMahasiswa;
+use App\Models\JalurMasuk;
+use App\Models\JenisTinggal;
 use App\Models\JenjangPendidikan;
+use App\Models\Pekerjaan;
+use App\Models\Penghasilan;
+use App\Models\Prodi;
+use App\Models\ProfilePT;
 use App\Models\RiwayatPendidikan;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Semester;
+use App\Models\Wilayah;
+use Faker\Factory as Faker;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 
 class MahasiswaSeeder extends Seeder
 {

@@ -2,46 +2,46 @@
 
 namespace App\Filament\Resources\KelasKuliahs;
 
-use UnitEnum;
-use App\Models\Prodi;
-use Filament\Tables\Table;
-use App\Models\KelasKuliah;
-use Filament\Actions\Action;
-use Filament\Schemas\Schema;
-use Filament\Actions\BulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
-use Filament\Resources\Resource;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\RestoreAction;
-use Filament\Actions\BulkActionGroup;
-use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Tabs;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\ForceDeleteAction;
-use Filament\Actions\RestoreBulkAction;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Section;
-use Filament\Forms\Components\DatePicker;
-use Filament\Schemas\Components\Tabs\Tab;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Tables\Filters\TrashedFilter;
-use Filament\Actions\ForceDeleteBulkAction;
+use App\Filament\Resources\KelasKuliahs\Pages\ManageKelasKuliahs;
 use App\Livewire\Perkuliahan\AktivitasMengajar;
 use App\Livewire\Perkuliahan\PesertaKelasTable;
-use Filament\Tables\Enums\RecordActionsPosition;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Models\KelasKuliah;
+use App\Models\Prodi;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ForceDeleteBulkAction;
+use Filament\Actions\RestoreBulkAction;
+use Filament\Actions\ViewAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
 use Filament\Schemas\Components\Livewire as LivewireSchema;
-use App\Filament\Resources\KelasKuliahs\Pages\ManageKelasKuliahs;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\TrashedFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use UnitEnum;
 
 class KelasKuliahResource extends Resource
 {
     protected static ?string $model = KelasKuliah::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Perkulihan';
+    protected static string|UnitEnum|null $navigationGroup = 'Perkuliahan';
 
     protected static ?int $navigationSort = 3;
+
+    protected static ?string $navigationLabel = 'Kelas Perkuliahan';
 
     public static function form(Schema $schema): Schema
     {
@@ -58,11 +58,11 @@ class KelasKuliahResource extends Resource
                             ->relationship(
                                 name: 'prodi',
                                 titleAttribute: 'nama_program_studi',
-                                modifyQueryUsing: fn(Builder $query) => $query
+                                modifyQueryUsing: fn (Builder $query) => $query
                                     ->orderBy('nama_jenjang_pendidikan')
                                     ->orderBy('nama_program_studi')
                             )
-                            ->getOptionLabelFromRecordUsing(fn(Prodi $record) => $record->programStudiLengkap)
+                            ->getOptionLabelFromRecordUsing(fn (Prodi $record) => $record->programStudiLengkap)
                             ->native(false)
                             ->required(),
                         Select::make('id_semester')
@@ -71,7 +71,7 @@ class KelasKuliahResource extends Resource
                             ->relationship(
                                 name: 'semester',
                                 titleAttribute: 'nama_semester',
-                                modifyQueryUsing: fn(Builder $query) => $query
+                                modifyQueryUsing: fn (Builder $query) => $query
                                     ->where('a_periode_aktif', '1')
                                     ->where('id_tahun_ajaran', '>=', now()->year)
                                     ->orderBy('id_tahun_ajaran', 'asc')
@@ -125,7 +125,7 @@ class KelasKuliahResource extends Resource
                         'warning' => ['pending', 'changed'],
                         'danger' => 'failed',
                     ])
-                    ->tooltip(fn($record) => $record->sync_message),
+                    ->tooltip(fn ($record) => $record->sync_message),
                 TextColumn::make('id')
                     ->label('No.')
                     ->rowIndex(),
@@ -158,7 +158,7 @@ class KelasKuliahResource extends Resource
                 \Filament\Tables\Filters\SelectFilter::make('semester')
                     ->relationship('semester', 'nama_semester')
                     ->label('Semester')
-                    ->default(fn() => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', 1)->value('id_semester'))
+                    ->default(fn () => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', 1)->value('id_semester'))
                     ->preload()
                     ->searchable(),
             ])
@@ -168,7 +168,7 @@ class KelasKuliahResource extends Resource
                 EditAction::make()
                     ->iconButton()
                     ->tooltip('Edit Data')
-                    ->url(fn($record) => KelasKuliahResource::getUrl('add-dosen-pengajar', ['record' => $record->getKey()])),
+                    ->url(fn ($record) => KelasKuliahResource::getUrl('add-dosen-pengajar', ['record' => $record->getKey()])),
                 DeleteAction::make()
                     ->iconButton()
                     ->tooltip('Delete Data'),

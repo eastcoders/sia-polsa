@@ -19,8 +19,7 @@ class PushKelulusanJob implements ShouldQueue
 
     public function __construct(
         public RiwayatPendidikan $riwayat
-    ) {
-    }
+    ) {}
 
     public function handle(PddiktiClient $client): void
     {
@@ -31,6 +30,7 @@ class PushKelulusanJob implements ShouldQueue
 
             if (empty($this->riwayat->id_jenis_keluar)) {
                 Log::warning("PushKelulusanJob: Skip {$this->riwayat->id} - id_jenis_keluar kosong.");
+
                 return;
             }
 
@@ -58,7 +58,7 @@ class PushKelulusanJob implements ShouldQueue
             Log::info("PushKelulusanJob: Success push kelulusan {$this->riwayat->id}");
 
         } catch (\Exception $e) {
-            Log::error("PushKelulusanJob: Failed {$this->riwayat->id}: " . $e->getMessage());
+            Log::error("PushKelulusanJob: Failed {$this->riwayat->id}: ".$e->getMessage());
             $this->riwayat->update([
                 'sync_status' => 'failed',
                 'sync_message' => $e->getMessage(),

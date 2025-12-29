@@ -3,17 +3,17 @@
 namespace App\Filament\Resources\BiodataMahasiswas\Tables;
 
 use App\Models\Prodi;
-use Filament\Tables\Table;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class BiodataMahasiswasTable
 {
@@ -30,7 +30,7 @@ class BiodataMahasiswasTable
                         'danger' => 'failed',
                         'gray' => 'server_deleted',
                     ])
-                    ->tooltip(fn($record) => $record->sync_message),
+                    ->tooltip(fn ($record) => $record->sync_message),
                 TextColumn::make('id')
                     ->label('No.')
                     ->rowIndex(),
@@ -69,7 +69,7 @@ class BiodataMahasiswasTable
                             ->toArray()
                     )
                     ->query(function (Builder $query, array $data): Builder {
-                        if (!empty($data['values'])) {
+                        if (! empty($data['values'])) {
                             $query->whereHas('riwayatPendidikan', function (Builder $q) use ($data) {
                                 $q->whereIn('id_prodi', $data['values']);
                             });
@@ -86,7 +86,7 @@ class BiodataMahasiswasTable
                             ->pluck('nama_semester', 'id_semester')
                             ->toArray();
                     })
-                    ->default(fn() => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', '1')->value('id_semester'))
+                    ->default(fn () => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', '1')->value('id_semester'))
                     ->preload()
                     ->searchable()
                     ->query(function (Builder $query, array $data) {
@@ -98,6 +98,7 @@ class BiodataMahasiswasTable
                         }
                     }),
             ])
+            ->recordUrl(false)
             ->recordActions([
                 EditAction::make()
                     ->iconButton()
@@ -123,7 +124,7 @@ class BiodataMahasiswasTable
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->before(fn($record) => $record?->riwayatPendidikan()?->delete()),
+                        ->before(fn ($record) => $record?->riwayatPendidikan()?->delete()),
                     BulkAction::make('push_selected')
                         ->label('Push Selected to Server')
                         ->icon('heroicon-o-cloud-arrow-up')

@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\BiodataMahasiswa;
 use App\Services\PddiktiClient;
+use Filament\Notifications\Notification;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,8 +21,7 @@ class PushBiodataMahasiswaJob implements ShouldQueue
      */
     public function __construct(
         public BiodataMahasiswa $mahasiswa
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -79,8 +79,8 @@ class PushBiodataMahasiswaJob implements ShouldQueue
                 // Assume response structure: ['id_mahasiswa' => 'UUID'] or similar
                 $idServer = $response['id_mahasiswa'] ?? $response['id'] ?? null;
 
-                if (!$idServer) {
-                    throw new \Exception("Gagal mendapatkan ID Server setelah insert Biodata.");
+                if (! $idServer) {
+                    throw new \Exception('Gagal mendapatkan ID Server setelah insert Biodata.');
                 }
 
                 $this->mahasiswa->update([
@@ -94,13 +94,13 @@ class PushBiodataMahasiswaJob implements ShouldQueue
 
                 $response = $client->updateBiodataMahasiswa([
                     'key' => [
-                        'id_mahasiswa' => $idServer
+                        'id_mahasiswa' => $idServer,
                     ],
                     'record' => $biodataPayload,
                 ]);
 
-                if (!$response) {
-                    throw new \Exception("Gagal update Biodata.");
+                if (! $response) {
+                    throw new \Exception('Gagal update Biodata.');
                 }
 
                 $this->mahasiswa->update([
@@ -144,6 +144,22 @@ class PushBiodataMahasiswaJob implements ShouldQueue
                             'sync_at' => now(),
                         ]);
                     }
+                } else {
+                    $key = [
+                        'id_registrasi_mahasiswa' => $riwayat->id_server,
+                    ];
+                    $client->updateRiwayatPendidikanMahasiswa($key, $riwayatPayload);
+
+                    $riwayat->update([
+                        'sync_status' => 'synced',
+                        'sync_message' => null,
+                        'sync_at' => now(),
+                    ]);
+
+                    Notification::make()
+                        ->title('Berhasil Push Riwayat Pendidikan')
+                        ->success()
+                        ->send();
                 }
             }
 
@@ -155,7 +171,7 @@ class PushBiodataMahasiswaJob implements ShouldQueue
             ]);
 
         } catch (\Exception $e) {
-            Log::error("Failed to push mahasiswa {$this->mahasiswa->id}: " . $e->getMessage());
+            Log::error("Failed to push mahasiswa {$this->mahasiswa->id}: ".$e->getMessage());
 
             $this->mahasiswa->update([
                 'sync_status' => 'failed',

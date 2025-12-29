@@ -20,8 +20,7 @@ class CleanupSyncRiwayatPendidikanJob implements ShouldQueue
     public function __construct(
         public Carbon $syncStartTime,
         public array $filter = []
-    ) {
-    }
+    ) {}
 
     public function handle(PddiktiClient $client): void
     {
@@ -40,20 +39,20 @@ class CleanupSyncRiwayatPendidikanJob implements ShouldQueue
             $confirmedDeleted = 0;
             $falseAlarms = 0;
 
-            Log::info("Cleanup Sync Riwayat Pendidikan: Checking " . $suspects->count() . " suspects for deletion.");
+            Log::info('Cleanup Sync Riwayat Pendidikan: Checking '.$suspects->count().' suspects for deletion.');
 
             foreach ($suspects as $suspect) {
                 try {
                     // 2. Verify with API (Explicit Check)
                     $response = $client->getListRiwayatPendidikanMahasiswa([
-                        'filter' => "id_registrasi_mahasiswa='{$suspect->id_server}'"
+                        'filter' => "id_registrasi_mahasiswa='{$suspect->id_server}'",
                     ]);
 
                     // 3. Confirm Deletion
                     if (empty($response)) {
                         $suspect->update([
                             'sync_status' => 'server_deleted',
-                            'sync_message' => 'Data tidak ditemukan di server (Verified) saat sinkronisasi ' . $this->syncStartTime->format('d-m-Y H:i'),
+                            'sync_message' => 'Data tidak ditemukan di server (Verified) saat sinkronisasi '.$this->syncStartTime->format('d-m-Y H:i'),
                         ]);
                         $confirmedDeleted++;
                     } else {
@@ -61,14 +60,14 @@ class CleanupSyncRiwayatPendidikanJob implements ShouldQueue
                     }
 
                 } catch (\Exception $e) {
-                    Log::warning("Verification failed for suspect riwayat {$suspect->id_server}: " . $e->getMessage());
+                    Log::warning("Verification failed for suspect riwayat {$suspect->id_server}: ".$e->getMessage());
                 }
             }
 
             Log::info("Cleanup Sync Riwayat Pendidikan Result: {$confirmedDeleted} confirmed deleted, {$falseAlarms} false alarms.");
 
         } catch (\Exception $e) {
-            Log::error("Failed to run cleanup sync riwayat pendidikan: " . $e->getMessage());
+            Log::error('Failed to run cleanup sync riwayat pendidikan: '.$e->getMessage());
             throw $e;
         }
     }

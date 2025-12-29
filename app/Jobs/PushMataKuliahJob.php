@@ -20,8 +20,7 @@ class PushMataKuliahJob implements ShouldQueue
      */
     public function __construct(
         public MataKuliah $mata_kuliah
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -51,8 +50,8 @@ class PushMataKuliahJob implements ShouldQueue
                 $response = $client->insertMataKuliah($data);
                 $idServer = $response['id_matkul'] ?? $response['id'] ?? null;
 
-                if (!$idServer) {
-                    throw new \Exception("Gagal mendapatkan ID Server setelah insert Mata Kuliah.");
+                if (! $idServer) {
+                    throw new \Exception('Gagal mendapatkan ID Server setelah insert Mata Kuliah.');
                 }
 
                 $this->mata_kuliah->update([
@@ -62,11 +61,25 @@ class PushMataKuliahJob implements ShouldQueue
                     'sync_at' => now(),
                 ]);
             } else {
-                $idServer = $this->mata_kuliah->id_server;
+                if ($this->mata_kuliah->sync_status == 'changed') {
+                    $key = [
+                        'id_matkul' => $this->mata_kuliah->id_server,
+                    ];
+
+                    $response = $client->updateMataKuliah($key, $data);
+
+                    $this->mata_kuliah->update([
+                        'id_server' => $key,
+                        'sync_status' => 'synced', // Temporary, wait for Riwayat
+                        'sync_message' => null,
+                        'sync_at' => now(),
+                    ]);
+                }
+
             }
 
         } catch (\Exception $e) {
-            Log::error("Failed to push mata kuliah {$this->mata_kuliah->id}: " . $e->getMessage());
+            Log::error("Failed to push mata kuliah {$this->mata_kuliah->id}: ".$e->getMessage());
 
             $this->mata_kuliah->update([
                 'sync_status' => 'failed',

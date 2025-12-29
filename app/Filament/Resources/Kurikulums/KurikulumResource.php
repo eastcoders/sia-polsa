@@ -2,33 +2,34 @@
 
 namespace App\Filament\Resources\Kurikulums;
 
-use UnitEnum;
-use App\Models\Prodi;
+use App\Filament\Resources\Kurikulums\Pages\ManageKurikulums;
 use App\Models\Kurikulum;
-use Filament\Tables\Table;
+use App\Models\Prodi;
 use Filament\Actions\Action;
-use Filament\Schemas\Schema;
 use Filament\Actions\BulkAction;
-use Filament\Actions\EditAction;
-use Filament\Resources\Resource;
-use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
-use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\View;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Resources\Resource;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
-use App\Filament\Resources\Kurikulums\Pages\ManageKurikulums;
+use Filament\Schemas\Components\View;
+use Filament\Schemas\Schema;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use UnitEnum;
 
 class KurikulumResource extends Resource
 {
     protected static ?string $model = Kurikulum::class;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Perkulihan';
+    protected static string|UnitEnum|null $navigationGroup = 'Perkuliahan';
 
     protected static ?int $navigationSort = 2;
 
@@ -43,11 +44,11 @@ class KurikulumResource extends Resource
                     ->relationship(
                         name: 'prodi',
                         titleAttribute: 'nama_program_studi', // kolom nyata
-                        modifyQueryUsing: fn(Builder $query) => $query
+                        modifyQueryUsing: fn (Builder $query) => $query
                             ->orderBy('nama_jenjang_pendidikan')
                             ->orderBy('nama_program_studi')
                     )
-                    ->getOptionLabelFromRecordUsing(fn(Prodi $record) => $record->programStudiLengkap)
+                    ->getOptionLabelFromRecordUsing(fn (Prodi $record) => $record->programStudiLengkap)
                     ->native(false)
                     ->required(),
                 Select::make('id_semester')
@@ -56,9 +57,9 @@ class KurikulumResource extends Resource
                     ->relationship(
                         name: 'semester',
                         titleAttribute: 'nama_semester',
-                        modifyQueryUsing: fn(Builder $query) => $query
-                            ->where('id_tahun_ajaran', '>=', now()->year)
-                            ->orderBy('id_tahun_ajaran', 'asc')
+                        modifyQueryUsing: fn (Builder $query) => $query
+                            ->where('id_semester', '>=', now()->year)
+                            ->orderBy('id_semester', 'asc')
                             ->orderBy('nama_semester', 'asc')
                     )
                     ->required(),
@@ -68,7 +69,7 @@ class KurikulumResource extends Resource
                     ->default(0)
                     ->numeric()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
                         'jumlah_sks_lulus',
                         ($get('jumlah_sks_pilihan') ?? 0) +
                         ($get('jumlah_sks_wajib') ?? 0)
@@ -79,7 +80,7 @@ class KurikulumResource extends Resource
                     ->default(0)
                     ->numeric()
                     ->live(onBlur: true)
-                    ->afterStateUpdated(fn(Set $set, Get $get) => $set(
+                    ->afterStateUpdated(fn (Set $set, Get $get) => $set(
                         'jumlah_sks_lulus',
                         ($get('jumlah_sks_pilihan') ?? 0) +
                         ($get('jumlah_sks_wajib') ?? 0)
@@ -101,6 +102,15 @@ class KurikulumResource extends Resource
     {
         return $table
             ->columns([
+                TextColumn::make('sync_status')
+                    ->label('Status Sync')
+                    ->badge()
+                    ->colors([
+                        'success' => 'synced',
+                        'warning' => ['pending', 'changed'],
+                        'danger' => 'failed',
+                    ])
+                    ->tooltip(fn ($record) => $record->sync_message),
                 TextColumn::make('id')
                     ->rowIndex()
                     ->label('#'),
@@ -120,16 +130,7 @@ class KurikulumResource extends Resource
                 TextColumn::make('jumlah_sks_pilihan')
                     ->label('SKS Pilihan')
                     ->searchable(),
-                TextColumn::make('sync_status')
-                    ->label('Status Sync')
-                    ->badge()
-                    ->colors([
-                        'success' => 'synced',
-                        'warning' => ['pending', 'changed'],
-                        'danger' => 'failed',
-                    ])
-                    ->tooltip(fn($record) => $record->sync_message)
-                    ->sortable(),
+
                 TextColumn::make('sync_at')
                     ->label('Sync Terakhir')
                     ->dateTime()
@@ -146,7 +147,7 @@ class KurikulumResource extends Resource
                             ->toArray()
                     )
                     ->query(function (Builder $query, array $data): Builder {
-                        if (!empty($data['values'])) {
+                        if (! empty($data['values'])) {
                             $query->whereIn('id_prodi', $data['values']);
                         }
 
@@ -156,22 +157,35 @@ class KurikulumResource extends Resource
             ])
             ->recordActions([
                 EditAction::make()
-                    ->url(fn($record) => KurikulumResource::getUrl('edit', ['record' => $record->getKey()])),
-                DeleteAction::make(),
+                    ->iconButton()
+                    ->tooltip('Edit Data')
+                    ->url(fn ($record) => KurikulumResource::getUrl('edit', ['record' => $record->getKey()])),
+                DeleteAction::make()
+                    ->iconButton()
+                    ->tooltip('Delete Data'),
                 Action::make('push_to_feeder')
-                    ->label('Push to Server')
+                    ->iconButton()
+                    ->tooltip('Push Data')
                     ->icon('heroicon-o-cloud-arrow-up')
                     ->color('warning')
                     ->requiresConfirmation()
                     ->action(function ($record) {
-                        $record->update(['sync_status' => 'changed']);
-                        \App\Jobs\PushKurikulumJob::dispatch($record);
-                        \Filament\Notifications\Notification::make()
-                            ->title('Push dijadwalkan')
-                            ->success()
+                        if ($record->sync_status != 'synced') {
+
+                            \App\Jobs\PushKurikulumJob::dispatch($record);
+
+                            return \Filament\Notifications\Notification::make()
+                                ->title('Push dijadwalkan')
+                                ->success()
+                                ->send();
+                        }
+
+                        return \Filament\Notifications\Notification::make()
+                            ->title('Tidak ada yang perlu di push')
+                            ->danger()
                             ->send();
                     }),
-            ])
+            ], RecordActionsPosition::BeforeColumns)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

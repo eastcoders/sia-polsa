@@ -9,7 +9,7 @@ class NilaiPerkuliahan extends Page
 {
     protected static ?string $recordTitleAttribute = 'Nilai Perkuliahan';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Perkulihan';
+    protected static string|UnitEnum|null $navigationGroup = 'Perkuliahan';
 
     protected static ?int $navigationSort = 4;
 

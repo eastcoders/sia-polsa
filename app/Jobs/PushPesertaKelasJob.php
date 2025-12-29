@@ -20,8 +20,7 @@ class PushPesertaKelasJob implements ShouldQueue
      */
     public function __construct(
         public PesertaKelasKuliah $pesertaKelas
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -40,15 +39,16 @@ class PushPesertaKelasJob implements ShouldQueue
 
                 // Release job to retry later (after 30 seconds)
                 $this->release(30);
+
                 return;
             }
 
             // 2. Check if Riwayat Pendidikan has id_server
             $riwayatPendidikan = $this->pesertaKelas->riwayatPendidikan;
 
-            if (!$riwayatPendidikan || empty($riwayatPendidikan->id_server)) {
+            if (! $riwayatPendidikan || empty($riwayatPendidikan->id_server)) {
                 $message = "Peserta Kelas {$this->pesertaKelas->id} tidak memiliki Riwayat Pendidikan dengan id_server.";
-                Log::warning("PushPesertaKelasJob: " . $message);
+                Log::warning('PushPesertaKelasJob: '.$message);
 
                 throw new \Exception($message);
             }
@@ -67,7 +67,7 @@ class PushPesertaKelasJob implements ShouldQueue
             ]);
 
         } catch (\Exception $e) {
-            Log::error("PushPesertaKelasJob: Failed to push peserta kelas {$this->pesertaKelas->id}: " . $e->getMessage());
+            Log::error("PushPesertaKelasJob: Failed to push peserta kelas {$this->pesertaKelas->id}: ".$e->getMessage());
 
             throw $e;
         }

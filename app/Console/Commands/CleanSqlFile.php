@@ -16,10 +16,11 @@ class CleanSqlFile extends Command
     public function handle()
     {
         $inputFile = $this->argument('input');
-        $outputFile = $this->argument('output') ?: $inputFile . '.clean';
+        $outputFile = $this->argument('output') ?: $inputFile.'.clean';
 
-        if (!File::exists($inputFile)) {
+        if (! File::exists($inputFile)) {
             $this->error("File tidak ditemukan: {$inputFile}");
+
             return;
         }
 
@@ -32,7 +33,8 @@ class CleanSqlFile extends Command
                 $text = $matches[1];
                 // Escape single quotes kecuali yang sudah di-escape
                 $text = preg_replace("/(?<!\\\\)'/", "\\'", $text);
-                return "'" . $text . "'";
+
+                return "'".$text."'";
             },
             $content
         );
@@ -58,7 +60,7 @@ class CleanSqlFile extends Command
         File::put($outputFile, $content);
 
         $this->info("✅ File telah dibersihkan: {$outputFile}");
-        $this->info("   Size asli: " . filesize($inputFile) . " bytes");
-        $this->info("   Size baru: " . filesize($outputFile) . " bytes");
+        $this->info('   Size asli: '.filesize($inputFile).' bytes');
+        $this->info('   Size baru: '.filesize($outputFile).' bytes');
     }
 }

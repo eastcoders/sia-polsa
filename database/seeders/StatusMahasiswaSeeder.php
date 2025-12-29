@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class StatusMahasiswaSeeder extends Seeder
@@ -26,7 +25,7 @@ class StatusMahasiswaSeeder extends Seeder
                 $this->command->error('Failed to retrieve status mahasiswa data.');
             }
         } catch (\Exception $e) {
-            $this->command->error('Error syncing status mahasiswa: ' . $e->getMessage());
+            $this->command->error('Error syncing status mahasiswa: '.$e->getMessage());
         }
     }
 }

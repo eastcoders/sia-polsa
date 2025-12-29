@@ -63,6 +63,6 @@ class SyncAktivitasKuliahMahasiswaBatch extends BaseSyncJob implements ShouldQue
 
     protected function getRecordId(array $row): string
     {
-        return ($row['id_registrasi_mahasiswa'] ?? '?') . '-' . ($row['id_semester'] ?? '?');
+        return ($row['id_registrasi_mahasiswa'] ?? '?').'-'.($row['id_semester'] ?? '?');
     }
 }

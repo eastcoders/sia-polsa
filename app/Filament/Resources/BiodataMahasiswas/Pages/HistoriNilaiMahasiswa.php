@@ -6,9 +6,9 @@ use App\Filament\Resources\BiodataMahasiswas\BiodataMahasiswaResource;
 use BackedEnum;
 use Filament\Resources\Pages\Concerns\InteractsWithRecord;
 use Filament\Resources\Pages\Page;
+use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
-use Filament\Support\Icons\Heroicon;
 
 class HistoriNilaiMahasiswa extends Page implements HasTable
 {
@@ -41,7 +41,7 @@ class HistoriNilaiMahasiswa extends Page implements HasTable
                     ->where('nilai_kelas_perkuliahans.id_registrasi_mahasiswa', $this->record->riwayatPendidikan?->id_registrasi_mahasiswa)
                     ->select('nilai_kelas_perkuliahans.*')
                     ->with([
-                        'kelasKuliah' => fn($query) => $query->withTrashed()->with(['matkul', 'semester']),
+                        'kelasKuliah' => fn ($query) => $query->withTrashed()->with(['matkul', 'semester']),
                     ])
             )
             ->columns([
@@ -70,18 +70,19 @@ class HistoriNilaiMahasiswa extends Page implements HasTable
                     ->native(false)
                     ->options(
                         \App\Models\Semester::query()
-                            ->where('id_tahun_ajaran', '<=', now()->year . '2')
+                            ->where('id_tahun_ajaran', '<=', now()->year.'2')
                             ->orderBy('id_tahun_ajaran', 'desc')
                             ->pluck('nama_semester', 'id_semester')
                             ->toArray()
                     )
-                    ->default(fn() => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', 1)->value('id_semester'))
+                    ->default(fn () => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', 1)->value('id_semester'))
                     ->query(function (\Illuminate\Database\Eloquent\Builder $query, array $data): \Illuminate\Database\Eloquent\Builder {
                         $value = $data['value'] ?? null;
-                        if (!empty($value)) {
+                        if (! empty($value)) {
                             // Specify table name to avoid ambiguity
                             $query->where('semesters.id_semester', $value);
                         }
+
                         return $query;
                     }),
             ])

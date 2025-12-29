@@ -2,13 +2,11 @@
 
 namespace Database\Seeders;
 
-use App\Models\Prodi;
 use App\Models\MataKuliah;
+use App\Models\Prodi;
 use Faker\Factory as Faker;
-use Illuminate\Support\Str;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-
+use Illuminate\Support\Str;
 
 class MataKuliahSeeder extends Seeder
 {
@@ -70,7 +68,7 @@ class MataKuliahSeeder extends Seeder
             MataKuliah::create([
                 'id_matkul' => Str::uuid()->toString(),
                 'nama_mata_kuliah' => $nama,
-                'kode_mata_kuliah' => 'MK-' . strtoupper(Str::random(5)),
+                'kode_mata_kuliah' => 'MK-'.strtoupper(Str::random(5)),
                 'id_prodi' => Prodi::inRandomOrder()->value('id_prodi'),
                 'sks_mata_kuliah' => $sks_mata_kuliah,
                 'sks_tatap_muka' => $sks_tatap_muka,
