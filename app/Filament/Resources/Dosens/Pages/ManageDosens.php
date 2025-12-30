@@ -2,14 +2,15 @@
 
 namespace App\Filament\Resources\Dosens\Pages;
 
-use App\Filament\Resources\Dosens\DosenResource;
 use App\Jobs\SyncDosenJob;
+use Illuminate\Support\Str;
 use Filament\Actions\Action;
+use App\Jobs\DispatchSyncDosen;
 use Filament\Actions\CreateAction;
+use Filament\Support\Icons\Heroicon;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
-use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Str;
+use App\Filament\Resources\Dosens\DosenResource;
 
 class ManageDosens extends ManageRecords
 {
@@ -38,7 +39,7 @@ class ManageDosens extends ManageRecords
                 ->color('info')
                 ->requiresConfirmation()
                 ->action(function () {
-                    SyncDosenJob::dispatch();
+                    DispatchSyncDosen::dispatch();
                     Notification::make()
                         ->title('Sinkronisasi Dimulai')
                         ->body('Proses sinkronisasi Dosen sedang berjalan di belakang layar.')

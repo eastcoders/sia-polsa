@@ -45,6 +45,7 @@ class DosensTable
             ->filters([
                 //
             ])
+            ->recordUrl(false)
             ->recordActions([
                 EditAction::make(),
             ])

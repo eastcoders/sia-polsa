@@ -2,27 +2,28 @@
 
 namespace App\Filament\Resources\Dosens;
 
-use App\Filament\Resources\Dosens\Pages\ManageDosens;
-use App\Livewire\Dosen\RegistrasiDosen;
+use BackedEnum;
 use App\Models\Agama;
 use App\Models\Dosen;
-use BackedEnum;
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Resources\Resource;
-use Filament\Schemas\Components\Livewire;
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filament\Schemas\Schema;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Resources\Resource;
+use Filament\Actions\DeleteAction;
+use Filament\Support\Icons\Heroicon;
+use Filament\Actions\BulkActionGroup;
+use Filament\Forms\Components\Select;
+use Filament\Actions\DeleteBulkAction;
+use App\Livewire\Dosen\RegistrasiDosen;
+use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Section;
+use Filament\Forms\Components\DatePicker;
+use Filament\Schemas\Components\Livewire;
+use Filament\Tables\Filters\SelectFilter;
+use App\Filament\Resources\Dosens\Pages\ManageDosens;
 
 class DosenResource extends Resource
 {
@@ -51,17 +52,18 @@ class DosenResource extends Resource
                     ->required(),
                 Select::make('id_agama')
                     ->label('Agama')
-                    ->options(fn () => Agama::orderBy('id_agama')->pluck('nama_agama', 'id_agama'))
+                    ->options(fn() => Agama::orderBy('id_agama')->pluck('nama_agama', 'id_agama'))
                     ->required(),
                 DatePicker::make('tanggal_lahir')
                     ->required(),
                 Section::make()
-                    ->visibleOn('edit')
+                    ->visibleOn(['edit', 'view'])
+                    ->disabledOn('view')
                     ->columnSpanFull()
                     ->schema([
                         Livewire::make(RegistrasiDosen::class)
                             ->key('register-dosen')
-                            ->hidden(fn (?Model $record): bool => $record === null),
+                            ->hidden(fn(?Model $record): bool => $record === null),
                     ]),
             ]);
     }
@@ -85,7 +87,7 @@ class DosenResource extends Resource
                     ->searchable(),
                 TextColumn::make('jenis_kelamin')
                     ->label('Jenis Kelamin')
-                    ->formatStateUsing(fn ($state) => $state == 'L' ? 'Laki Laki' : 'Perempuan'),
+                    ->formatStateUsing(fn($state) => $state == 'L' ? 'Laki Laki' : 'Perempuan'),
                 TextColumn::make('agama.nama_agama'),
                 TextColumn::make('tanggal_lahir')
                     ->label('Tanggal Lahir')
@@ -96,22 +98,26 @@ class DosenResource extends Resource
             ->defaultSort('nama_dosen')
             ->filters([
                 SelectFilter::make('nama_status_aktif')
-                    ->options(fn () => Dosen::distinct()
+                    ->options(fn() => Dosen::distinct()
                         ->pluck('nama_status_aktif', 'nama_status_aktif')
-                        ->mapWithKeys(fn ($value) => [$value => ucfirst($value)])
+                        ->mapWithKeys(fn($value) => [$value => ucfirst($value)])
                         ->toArray())
                     ->default('Aktif'),
             ])
+            ->recordUrl(false)
             ->recordActions([
                 EditAction::make()
                     ->iconButton()
                     ->tooltip('Edit Data')
-                    ->disabled(fn ($record) => $record->sync_at != null)
-                    ->url(fn ($record) => DosenResource::getUrl('edit', ['record' => $record])),
+                    ->disabled(fn($record) => $record->sync_at != null)
+                    ->url(fn($record) => DosenResource::getUrl('edit', ['record' => $record])),
+                ViewAction::make()
+                    ->iconButton()
+                    ->tooltip('View Data'),
                 DeleteAction::make()
                     ->iconButton()
                     ->tooltip('Hapus')
-                    ->disabled(fn ($record) => $record->sync_at != null),
+                    ->disabled(fn($record) => $record->sync_at != null),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

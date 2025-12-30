@@ -11,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 
-class DispatchSyncKelasKuliah implements ShouldQueue
+class DispatchSyncDosen implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -30,27 +30,25 @@ class DispatchSyncKelasKuliah implements ShouldQueue
     {
         try {
             // 1. Get Total Data
-            $batchSize = 100; // Chunk Size
-            // $response = $client->getCountKelasKuliah(['filter' => $this->filter['filter'] ?? '']);
-            $response = 0;
+            $response = $client->getCountDosen(['filter' => $this->filter['filter'] ?? '']);
 
-            // Handle response format (some endpoints return data directly, some wrapped)
+            // Handle response format
             $totalData = (int) (is_array($response) ? ($response['data'] ?? 0) : $response);
-
+            $batchSize = 100; // Chunk Size
             $filter = $this->filter;
 
             if ($totalData === 0) {
-                Log::info('Total data is 0, attempting recursive sync for Kelas Kuliah.');
+                Log::info('Total data is 0, attempting recursive sync for Dosen.');
 
                 Bus::batch([
-                    new SyncKelasKuliahJob($batchSize, 0, $this->filter, true),
+                    new SyncDosenJob($batchSize, 0, $this->filter, true),
                 ])
-                    ->name('Sync Kelas Kuliah (Recursive)')
+                    ->name('Sync Dosen (Recursive)')
                     ->onQueue('default')
                     ->allowFailures()
                     ->finally(function (\Illuminate\Bus\Batch $batch) use ($filter) {
-                        Log::info('Dispatching DispatchSyncDosenPengajarKelasKuliah from recursive batch...');
-                        DispatchSyncDosenPengajarKelasKuliah::dispatch($filter);
+                        Log::info('Dispatching DispatchSyncPenugasanDosen from recursive batch...');
+                        DispatchSyncPenugasanDosen::dispatch($filter);
                     })
                     ->dispatch();
 
@@ -61,25 +59,24 @@ class DispatchSyncKelasKuliah implements ShouldQueue
             $jobs = [];
 
             for ($offset = 0; $offset < $totalData; $offset += $batchSize) {
-                // False for recursive param because we know the total
-                $jobs[] = new SyncKelasKuliahJob($batchSize, $offset, $this->filter, false);
+                $jobs[] = new SyncDosenJob($batchSize, $offset, $this->filter, false);
             }
 
             // 3. Dispatch Batch
             Bus::batch($jobs)
-                ->name('Sync Kelas Kuliah (' . $totalData . ' records)')
+                ->name('Sync Dosen (' . $totalData . ' records)')
                 ->onQueue('default')
                 ->allowFailures()
                 ->finally(function (\Illuminate\Bus\Batch $batch) use ($filter) {
-                    Log::info('Dispatching DispatchSyncDosenPengajarKelasKuliah...');
-                    DispatchSyncDosenPengajarKelasKuliah::dispatch($filter);
+                    Log::info('Dispatching DispatchSyncPenugasanDosen...');
+                    DispatchSyncPenugasanDosen::dispatch($filter);
                 })
                 ->dispatch();
 
-            Log::info("Dispatched batch for {$totalData} kelas kuliah records.");
+            Log::info("Dispatched batch for {$totalData} dosen records.");
 
         } catch (\Exception $e) {
-            Log::error('Failed to dispatch sync kelas kuliah: ' . $e->getMessage());
+            Log::error('Failed to dispatch sync dosen: ' . $e->getMessage());
             throw $e;
         }
     }

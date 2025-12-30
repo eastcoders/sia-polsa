@@ -9,7 +9,8 @@ class PddiktiClient
 {
     public function __construct(
         protected PddiktiTokenService $tokenService
-    ) {}
+    ) {
+    }
 
     // =========================================================================
     // HELPER METHODS
@@ -30,12 +31,12 @@ class PddiktiClient
 
         $json = $response->json();
 
-        if (! $response->successful()) {
+        if (!$response->successful()) {
             throw new Exception("HTTP Error saat call $act");
         }
 
         if (($json['error_code'] ?? 1) !== 0) {
-            throw new Exception("WS Error ($act): ".($json['error_desc'] ?? 'Tidak diketahui'));
+            throw new Exception("WS Error ($act): " . ($json['error_desc'] ?? 'Tidak diketahui'));
         }
 
         return $json['data'] ?? $json;
@@ -291,6 +292,20 @@ class PddiktiClient
         ]);
     }
 
+    public function getCountDosen(array $filter = [])
+    {
+        return $this->call('GetCountDosen', [
+            'filter' => $filter['filter'] ?? '',
+        ]);
+    }
+
+    public function getCountPenugasanSemuaDosen(array $filter = [])
+    {
+        return $this->call('GetCountPenugasanSemuaDosen', [
+            'filter' => $filter['filter'] ?? '',
+        ]);
+    }
+
     // =========================================================================
     // MAHASISWA & RIWAYAT PENDIDIKAN
     // =========================================================================
@@ -501,6 +516,22 @@ class PddiktiClient
     public function getDetailKelasKuliah(array $filter = [])
     {
         return $this->call('GetDetailKelasKuliah', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
+
+    public function getCountDosenPengajarKelasKuliah(array $filter = [])
+    {
+        return $this->call('GetCountDosenPengajarKelasKuliah', [
+            'filter' => $filter['filter'] ?? '',
+        ]);
+    }
+    public function getDosenPengajarKelasKuliah(array $filter = [])
+    {
+        return $this->call('GetDosenPengajarKelasKuliah', [
             'filter' => $filter['filter'] ?? '',
             'order' => $filter['order'] ?? '',
             'limit' => $filter['limit'] ?? 0,
