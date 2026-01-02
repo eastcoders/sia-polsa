@@ -124,6 +124,13 @@ class JadwalPerkuliahanResource extends Resource
                             }
                         };
                     }),
+                Select::make('kelas_pagi_sore')
+                    ->label('Pilih Kelas Pagi/Sore')
+                    ->columnSpanFull()
+                    ->options([
+                        'pagi' => 'Pagi',
+                        'sore' => 'Sore',
+                    ]),
 
             ]);
     }
@@ -145,7 +152,8 @@ class JadwalPerkuliahanResource extends Resource
                     ->searchable(),
                 TextColumn::make('kelasKuliah.nama_kelas_kuliah')
                     ->label('Kelas')
-                    ->searchable(),
+                    ->searchable()
+                    ->formatStateUsing(fn($record, $state) => $state . ' - ' . Str::ucfirst($record->kelas_pagi_sore)),
                 TextColumn::make('hari')
                     ->searchable()
                     ->formatStateUsing(fn(string $state): string => __(Str::ucfirst($state))),
@@ -153,11 +161,9 @@ class JadwalPerkuliahanResource extends Resource
                     ->label('Ruangan')
                     ->searchable(),
                 TextColumn::make('jam_mulai')
-                    ->time()
-                    ->sortable(),
+                    ->time("H:i"),
                 TextColumn::make('jam_selesai')
-                    ->time()
-                    ->sortable(),
+                    ->time("H:i"),
                 TextColumn::make('semester.nama_semester')
                     ->label('Semester')
                     ->searchable(),

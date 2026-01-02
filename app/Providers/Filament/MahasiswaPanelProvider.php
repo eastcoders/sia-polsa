@@ -6,12 +6,10 @@ use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Filament\Navigation\NavigationGroup;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
-use Filament\Support\Icons\Heroicon;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -21,24 +19,23 @@ use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
-class AdminPanelProvider extends PanelProvider
+class MahasiswaPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
         return $panel
-            ->default()
-            ->id('admin')
-            ->path('admin')
-            ->login(\App\Filament\Auth\Login::class)
+            ->id('mahasiswa')
+            ->path('mahasiswa')
+            ->login(\App\Filament\Mahasiswa\Auth\Login::class)
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::Emerald,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->discoverResources(in: app_path('Filament/Mahasiswa/Resources'), for: 'App\Filament\Mahasiswa\Resources')
+            ->discoverPages(in: app_path('Filament/Mahasiswa/Pages'), for: 'App\Filament\Mahasiswa\Pages')
             ->pages([
                 Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
+            ->discoverWidgets(in: app_path('Filament/Mahasiswa/Widgets'), for: 'App\Filament\Mahasiswa\Widgets')
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
@@ -57,25 +54,6 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 \App\Http\Middleware\RedirectIfWrongPanel::class,
                 Authenticate::class,
-            ])
-            ->sidebarCollapsibleOnDesktop()
-            ->viteTheme('resources/css/filament/admin/theme.css')
-            ->plugins([
-                // FilamentAwinTheme::make()
-                //     ->primaryColor(Color::Emerald),
-            ])
-            ->navigationGroups([
-                NavigationGroup::make()
-                    ->label('Perkuliahan')
-                    ->icon(Heroicon::OutlinedBookOpen),
-                NavigationGroup::make()
-                    ->label('Perlengkapan')
-                    ->icon(Heroicon::OutlinedRectangleStack),
-                NavigationGroup::make()
-                    ->label('Master Record')
-                    ->icon(Heroicon::OutlinedCog6Tooth)
-                    ->collapsed(),
             ]);
-
     }
 }

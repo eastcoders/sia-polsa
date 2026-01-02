@@ -40,4 +40,29 @@ class RiwayatPendidikan extends Model
     {
         return $this->belongsTo(NilaiKelasPerkuliahan::class, 'id_registrasi_mahasiswa', 'id_registrasi_mahasiswa');
     }
+
+    /**
+     * Get the student's shift (Pagi/Sore) based on NIM.
+     * Logic: Character at index 4 of NIM (1 = Pagi, 2 = Sore).
+     */
+    protected function waktuKuliah(): \Illuminate\Database\Eloquent\Casts\Attribute
+    {
+        return \Illuminate\Database\Eloquent\Casts\Attribute::make(
+            get: function ($value, $attributes) {
+                $nim = $attributes['nim'] ?? null;
+
+                if (!$nim || strlen($nim) <= 4) {
+                    return 'Tidak Diketahui';
+                }
+
+                $kode = substr($nim, 4, 1);
+
+                return match ($kode) {
+                    '1' => 'Pagi',
+                    '2' => 'Sore',
+                    default => 'Tidak Diketahui',
+                };
+            }
+        );
+    }
 }

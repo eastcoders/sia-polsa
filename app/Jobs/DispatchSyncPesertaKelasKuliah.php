@@ -11,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 
-class DispatchSyncRiwayatPendidikan implements ShouldQueue
+class DispatchSyncPesertaKelasKuliah implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -30,12 +30,12 @@ class DispatchSyncRiwayatPendidikan implements ShouldQueue
     {
         try {
             // 1. Get Total Data
-            $response = $client->getCountRiwayatPendidikanMahasiswa(['filter' => $this->filter['filter'] ?? '']);
+            $response = $client->getCountPesertaKelasKuliah(['filter' => $this->filter['filter'] ?? '']);
 
             $totalData = (int) ($response ?? 0);
 
             if ($totalData === 0) {
-                Log::info('No riwayat pendidikan data to sync.');
+                Log::info('No matkul kurikulum data to sync.');
 
                 return;
             }
@@ -45,27 +45,19 @@ class DispatchSyncRiwayatPendidikan implements ShouldQueue
             $jobs = [];
 
             for ($offset = 0; $offset < $totalData; $offset += $batchSize) {
-                $jobs[] = new SyncRiwayatPendidikanPageJob($batchSize, $offset, $this->filter);
+                $jobs[] = new SyncPesertaKelasKuliahPageJob($batchSize, $offset, $this->filter);
             }
 
-            // 3. Dispatch Batch
-            $startTime = now();
-            $filter = $this->filter;
-
             Bus::batch($jobs)
-                ->name('Sync Riwayat Pendidikan (' . $totalData . ' records)')
+                ->name('Sync Peserta Kelas Kuliah(' . $totalData . ' records)')
                 ->onQueue('default')
                 ->allowFailures()
-                ->then(function (\Illuminate\Bus\Batch $batch) use ($startTime, $filter) {
-                    Log::info('Riwayat Pendidikan Batch Finished. Dispatching CleanupSyncRiwayatPendidikanJob...');
-                    CleanupSyncRiwayatPendidikanJob::dispatch($startTime, $filter);
-                })
                 ->dispatch();
 
-            Log::info("Dispatched batch for {$totalData} riwayat pendidikan records.");
+            Log::info("Dispatched batch for {$totalData} peserta kelas kuliah records.");
 
         } catch (\Exception $e) {
-            Log::error('Failed to dispatch sync riwayat pendidikan: ' . $e->getMessage());
+            Log::error('Failed to dispatch sync peserta kelas kuliah: ' . $e->getMessage());
             throw $e;
         }
     }

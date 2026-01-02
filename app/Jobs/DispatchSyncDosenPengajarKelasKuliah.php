@@ -42,7 +42,7 @@ class DispatchSyncDosenPengajarKelasKuliah implements ShouldQueue
             }
 
             // 2. Calculate Batches
-            $batchSize = 100; // Chunk Size
+            $batchSize = 300; // Chunk Size
             $jobs = [];
 
             for ($offset = 0; $offset < $totalData; $offset += $batchSize) {
@@ -50,10 +50,15 @@ class DispatchSyncDosenPengajarKelasKuliah implements ShouldQueue
             }
 
             // 3. Dispatch Batch
+            $filter = $this->filter;
             Bus::batch($jobs)
                 ->name('Sync Dosen Pengajar Kelas Kuliah (' . $totalData . ' records)')
                 ->onQueue('default')
                 ->allowFailures()
+                ->finally(function (\Illuminate\Bus\Batch $batch) use ($filter) {
+                    Log::info('Dispatching DispatchSyncPesertaKelasKuliah...');
+                    DispatchSyncPesertaKelasKuliah::dispatch($filter);
+                })
                 ->dispatch();
 
             Log::info("Dispatched batch for {$totalData} dosen pengajar kelas kuliah records.");

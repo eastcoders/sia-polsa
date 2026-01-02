@@ -30,7 +30,7 @@ class DispatchSyncKelasKuliah implements ShouldQueue
     {
         try {
             // 1. Get Total Data
-            $batchSize = 100; // Chunk Size
+            $batchSize = 300; // Chunk Size
             // $response = $client->getCountKelasKuliah(['filter' => $this->filter['filter'] ?? '']);
             $response = 0;
 
@@ -51,6 +51,8 @@ class DispatchSyncKelasKuliah implements ShouldQueue
                     ->finally(function (\Illuminate\Bus\Batch $batch) use ($filter) {
                         Log::info('Dispatching DispatchSyncDosenPengajarKelasKuliah from recursive batch...');
                         DispatchSyncDosenPengajarKelasKuliah::dispatch($filter);
+
+
                     })
                     ->dispatch();
 
@@ -73,6 +75,8 @@ class DispatchSyncKelasKuliah implements ShouldQueue
                 ->finally(function (\Illuminate\Bus\Batch $batch) use ($filter) {
                     Log::info('Dispatching DispatchSyncDosenPengajarKelasKuliah...');
                     DispatchSyncDosenPengajarKelasKuliah::dispatch($filter);
+
+
                 })
                 ->dispatch();
 

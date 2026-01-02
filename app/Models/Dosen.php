@@ -10,4 +10,13 @@ class Dosen extends Model
     {
         return $this->belongsTo(Agama::class, 'id_agama', 'id_agama');
     }
+    public function user()
+    {
+        return $this->hasOne(User::class, 'dosen_id');
+    }
+
+    public function penugasanDosen()
+    {
+        return $this->belongsTo(PenugasanDosen::class, 'id_dosen', 'id_dosen');
+    }
 }

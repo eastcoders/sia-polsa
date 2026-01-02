@@ -39,7 +39,7 @@ class DispatchSyncPenugasanDosen implements ShouldQueue
             if ($totalData === 0) {
                 Log::info('Total data is 0, attempting recursive sync for Penugasan Dosen.');
 
-                $batchSize = 100;
+                $batchSize = 300;
                 Bus::batch([
                     new SyncPenugasanDosenJob($batchSize, 0, $this->filter, true),
                 ])
@@ -52,7 +52,7 @@ class DispatchSyncPenugasanDosen implements ShouldQueue
             }
 
             // 2. Calculate Batches
-            $batchSize = 100; // Chunk Size
+            $batchSize = 300; // Chunk Size
             $jobs = [];
 
             for ($offset = 0; $offset < $totalData; $offset += $batchSize) {

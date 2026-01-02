@@ -20,7 +20,8 @@ class DispatchSyncMahasiswa implements ShouldQueue
      */
     public function __construct(
         public array $filter = []
-    ) {}
+    ) {
+    }
 
     /**
      * Execute the job.
@@ -43,7 +44,7 @@ class DispatchSyncMahasiswa implements ShouldQueue
             }
 
             // 2. Calculate Batches
-            $batchSize = 100; // Chunk Size
+            $batchSize = 300; // Chunk Size
             $jobs = [];
 
             for ($offset = 0; $offset < $totalData; $offset += $batchSize) {
@@ -55,7 +56,7 @@ class DispatchSyncMahasiswa implements ShouldQueue
             $filter = $this->filter;
 
             Bus::batch($jobs)
-                ->name('Sync Mahasiswa ('.$totalData.' records)')
+                ->name('Sync Mahasiswa (' . $totalData . ' records)')
                 ->onQueue('default')
                 ->allowFailures()
                 ->then(function (\Illuminate\Bus\Batch $batch) use ($startTime, $filter) {
@@ -71,7 +72,7 @@ class DispatchSyncMahasiswa implements ShouldQueue
             Log::info("Dispatched batch for {$totalData} mahasiswa records.");
 
         } catch (\Exception $e) {
-            Log::error('Failed to dispatch sync mahasiswa: '.$e->getMessage());
+            Log::error('Failed to dispatch sync mahasiswa: ' . $e->getMessage());
             throw $e;
         }
     }

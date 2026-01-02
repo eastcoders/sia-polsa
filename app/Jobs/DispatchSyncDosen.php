@@ -34,7 +34,7 @@ class DispatchSyncDosen implements ShouldQueue
 
             // Handle response format
             $totalData = (int) (is_array($response) ? ($response['data'] ?? 0) : $response);
-            $batchSize = 100; // Chunk Size
+            $batchSize = 300; // Chunk Size
             $filter = $this->filter;
 
             if ($totalData === 0) {

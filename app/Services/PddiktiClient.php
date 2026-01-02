@@ -502,6 +502,22 @@ class PddiktiClient
             'filter' => $filter['filter'] ?? '',
         ]);
     }
+    public function getCountPesertaKelasKuliah(array $filter = [])
+    {
+        return $this->call('GetCountPesertaKelasKuliah', [
+            'filter' => $filter['filter'] ?? '',
+        ]);
+    }
+
+    public function getPesertaKelasKuliah(array $filter = [])
+    {
+        return $this->call('GetPesertaKelasKuliah', [
+            'filter' => $filter['filter'] ?? '',
+            'order' => $filter['order'] ?? '',
+            'limit' => $filter['limit'] ?? 0,
+            'offset' => $filter['offset'] ?? 0,
+        ]);
+    }
 
     public function getListKelasKuliah(array $filter = [])
     {

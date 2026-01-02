@@ -5,7 +5,9 @@ namespace App\Filament\Resources\Dosens;
 use BackedEnum;
 use App\Models\Agama;
 use App\Models\Dosen;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Table;
+use Filament\Actions\Action;
 use Filament\Schemas\Schema;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -118,7 +120,54 @@ class DosenResource extends Resource
                     ->iconButton()
                     ->tooltip('Hapus')
                     ->disabled(fn($record) => $record->sync_at != null),
-            ])
+                Action::make('create_user')
+                    ->tooltip('Buat User')
+                    ->iconButton()
+                    ->icon('heroicon-o-user-plus')
+                    ->color('success')
+                    ->form([
+                        TextInput::make('email')
+                            ->email()
+                            ->required()
+                            ->label('Email Login'),
+                        TextInput::make('password')
+                            ->password()
+                            ->required()
+                            ->confirmed()
+                            ->label('Password'),
+                        TextInput::make('password_confirmation')
+                            ->password()
+                            ->required()
+                            ->label('Konfirmasi Password'),
+                    ])
+                    ->action(function (Dosen $record, array $data) {
+                        if (!$record->nidn) {
+                            \Filament\Notifications\Notification::make()
+                                ->title('Gagal')
+                                ->body('Dosen tidak memiliki NIDN, tidak bisa dijadikan Username.')
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
+                        $user = \App\Models\User::create([
+                            'name' => $record->nama_dosen,
+                            'email' => $data['email'],
+                            'username' => $record->nidn,
+                            'password' => \Illuminate\Support\Facades\Hash::make($data['password']),
+                            'dosen_id' => $record->id,
+                        ]);
+
+                        $user->assignRole('dosen');
+
+                        \Filament\Notifications\Notification::make()
+                            ->title('Sukses')
+                            ->body('Akun user berhasil dibuat with Username: ' . $record->nidn)
+                            ->success()
+                            ->send();
+                    })
+                    ->visible(fn(Dosen $record) => $record->user === null),
+            ], RecordActionsPosition::BeforeColumns)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),

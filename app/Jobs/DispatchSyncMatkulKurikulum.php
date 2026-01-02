@@ -20,7 +20,8 @@ class DispatchSyncMatkulKurikulum implements ShouldQueue
      */
     public function __construct(
         public array $filter = []
-    ) {}
+    ) {
+    }
 
     /**
      * Execute the job.
@@ -40,7 +41,7 @@ class DispatchSyncMatkulKurikulum implements ShouldQueue
             }
 
             // 2. Calculate Batches
-            $batchSize = 100;
+            $batchSize = 300;
             $jobs = [];
 
             for ($offset = 0; $offset < $totalData; $offset += $batchSize) {
@@ -52,7 +53,7 @@ class DispatchSyncMatkulKurikulum implements ShouldQueue
             $filter = $this->filter;
 
             Bus::batch($jobs)
-                ->name('Sync Riwayat Pendidikan ('.$totalData.' records)')
+                ->name('Sync Riwayat Pendidikan (' . $totalData . ' records)')
                 ->onQueue('default')
                 ->allowFailures()
                 ->dispatch();
@@ -60,7 +61,7 @@ class DispatchSyncMatkulKurikulum implements ShouldQueue
             Log::info("Dispatched batch for {$totalData} matkul kurikulum records.");
 
         } catch (\Exception $e) {
-            Log::error('Failed to dispatch sync matkul kurikulum: '.$e->getMessage());
+            Log::error('Failed to dispatch sync matkul kurikulum: ' . $e->getMessage());
             throw $e;
         }
     }

@@ -26,7 +26,7 @@ class KelasKuliah extends Model
 
     public function pesertaKelas()
     {
-        return $this->belongsTo(PesertaKelasKuliah::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
+        return $this->hasMany(PesertaKelasKuliah::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
     }
 
     public function dosenPengajarKelasKuliah()
@@ -45,5 +45,15 @@ class KelasKuliah extends Model
     public function nilaiKuliah()
     {
         return $this->belongsTo(NilaiKelasPerkuliahan::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
+    }
+
+    public function jadwalPerkuliahan()
+    {
+        return $this->hasMany(JadwalPerkuliahan::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
+    }
+
+    public function pertemuanKelas()
+    {
+        return $this->hasMany(PertemuanKelas::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
     }
 }
