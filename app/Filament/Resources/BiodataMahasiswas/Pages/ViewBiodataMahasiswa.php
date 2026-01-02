@@ -26,12 +26,27 @@ class ViewBiodataMahasiswa extends ViewRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         if (isset($data['id_wilayah'])) {
-            $kecamatan = Wilayah::where('id_wilayah', $data['id_wilayah'])->value('id_induk_wilayah');
-            $kabupaten = Wilayah::where('id_wilayah', $kecamatan)->first();
-            $provinsi = Wilayah::where('id_wilayah', $kabupaten->id_induk_wilayah)->first();
+            $currentWilayah = Wilayah::where('id_wilayah', $data['id_wilayah'])->first();
 
-            $data['id_kabupaten'] = $kabupaten->id_wilayah;
-            $data['id_provinsi'] = $provinsi->id_wilayah;
+            if ($currentWilayah) {
+                if ($currentWilayah->id_level_wilayah == 3) {
+                    $kecamatan = $currentWilayah;
+                    $kabupaten = Wilayah::where('id_wilayah', trim($kecamatan->id_induk_wilayah))->first();
+                    $provinsi = Wilayah::where('id_wilayah', trim($kabupaten->id_induk_wilayah))->first();
+
+                    $data['id_kabupaten'] = trim($kabupaten->id_wilayah ?? '');
+                    $data['id_provinsi'] = trim($provinsi->id_wilayah ?? '');
+                } elseif ($currentWilayah->id_level_wilayah == 2) {
+                    $kabupaten = $currentWilayah;
+                    $provinsi = Wilayah::where('id_wilayah', trim($kabupaten->id_induk_wilayah))->first();
+
+                    $data['id_kabupaten'] = trim($kabupaten->id_wilayah);
+                    $data['id_provinsi'] = trim($provinsi->id_wilayah ?? '');
+                } elseif ($currentWilayah->id_level_wilayah == 1) {
+                    $data['id_provinsi'] = trim($currentWilayah->id_wilayah);
+                    $data['id_kabupaten'] = null;
+                }
+            }
         }
 
         return $data;

@@ -9,6 +9,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use App\Filament\Resources\BiodataMahasiswas\BiodataMahasiswaResource;
+use Illuminate\Database\Eloquent\Builder;
 
 class ListBiodataMahasiswas extends ListRecords
 {
@@ -35,5 +36,9 @@ class ListBiodataMahasiswas extends ListRecords
                         ->send();
                 }),
         ];
+    }
+    protected function paginateTableQuery(Builder $query): \Illuminate\Contracts\Pagination\CursorPaginator
+    {
+        return $query->cursorPaginate($this->getTableRecordsPerPage());
     }
 }

@@ -22,6 +22,17 @@ class BiodataMahasiswasTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(function (Builder $query) {
+                return $query
+                    ->join('riwayat_pendidikans', 'biodata_mahasiswas.id_mahasiswa', '=', 'riwayat_pendidikans.id_mahasiswa')
+                    ->select('biodata_mahasiswas.*')
+                    ->distinct()
+                    ->with([
+                        'riwayatPendidikan.prodi',
+                        'riwayatPendidikan.periodeDaftar',
+                        'agama'
+                    ]);
+            })
             ->columns([
                 TextColumn::make('sync_status')
                     ->label('Status Sync')
@@ -41,7 +52,9 @@ class BiodataMahasiswasTable
                     ->searchable(),
                 TextColumn::make('riwayatPendidikan.nim')
                     ->label('NIM')
-                    ->searchable(),
+                    ->searchable(query: function (Builder $query, string $search) {
+                        $query->where('riwayat_pendidikans.nim', 'like', "%{$search}%");
+                    }),
                 TextColumn::make('jenis_kelamin')
                     ->formatStateUsing(function ($state) {
                         return $state === 'L' ? 'Laki-laki' : 'Perempuan';
