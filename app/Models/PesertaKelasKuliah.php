@@ -11,7 +11,7 @@ class PesertaKelasKuliah extends Model
 
     public function riwayatPendidikan()
     {
-        return $this->hasOne(RiwayatPendidikan::class, 'id_registrasi_mahasiswa', 'id_registrasi_mahasiswa');
+        return $this->belongsTo(RiwayatPendidikan::class, 'id_registrasi_mahasiswa', 'id_registrasi_mahasiswa');
     }
 
     public function kelasKuliah()

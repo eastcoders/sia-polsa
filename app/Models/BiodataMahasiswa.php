@@ -18,7 +18,8 @@ class BiodataMahasiswa extends Model
 
     public function riwayatPendidikan()
     {
-        return $this->hasOne(RiwayatPendidikan::class, 'id_mahasiswa', 'id_mahasiswa');
+        // Relationship based on UUID id_mahasiswa
+        return $this->hasMany(RiwayatPendidikan::class, 'id_mahasiswa', 'id_mahasiswa');
     }
 
     public function agama()

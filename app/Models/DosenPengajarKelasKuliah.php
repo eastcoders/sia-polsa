@@ -28,4 +28,5 @@ class DosenPengajarKelasKuliah extends Model
     {
         return $this->hasMany(PesertaKelasKuliah::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
     }
+    
 }

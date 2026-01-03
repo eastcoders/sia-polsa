@@ -34,6 +34,6 @@ class PertemuanKelas extends Model
 
     public function presensiMahasiswas()
     {
-        return $this->hasMany(PresensiMahasiswa::class, 'id_pertemuan_kelas');
+        return $this->hasMany(PresensiMahasiswa::class, 'id_pertemuan_kelas', 'id');
     }
 }

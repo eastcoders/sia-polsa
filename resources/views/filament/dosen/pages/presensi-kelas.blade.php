@@ -17,7 +17,7 @@
                     wire:change="loadPertemuan"
                     class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
                 >
-                    <option value="">Pertemuan Baru</option>
+                    <option value="{{ null }}">Pertemuan Baru</option>
                     @foreach($historyPertemuan as $id => $label)
                         <option value="{{ $id }}">{{ $label }}</option>
                     @endforeach

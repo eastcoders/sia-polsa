@@ -10,6 +10,7 @@ export default defineConfig({
                 'resources/js/app.js',
                 'resources/css/filament/admin/theme.css',
                 'resources/css/filament/dosen/theme.css',
+                'resources/css/filament/mahasiswa/theme.css',
             ],
             refresh: true,
         }),

@@ -54,6 +54,7 @@ class MahasiswaPanelProvider extends PanelProvider
             ->authMiddleware([
                 \App\Http\Middleware\RedirectIfWrongPanel::class,
                 Authenticate::class,
-            ]);
+            ])
+            ->viteTheme('resources/css/filament/mahasiswa/theme.css');
     }
 }

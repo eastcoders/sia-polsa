@@ -41,10 +41,11 @@ class JadwalPerkuliahanResource extends Resource
                     ->relationship(
                         'kelasKuliah',
                         'nama_kelas_kuliah',
-                        modifyQueryUsing: fn(Builder $query, Get $get) => $query->where('id_semester', $get('id_semester')),
+                        modifyQueryUsing: fn(Builder $query, Get $get) => $query->where('id_semester', $get('id_semester'))->orderBy('nama_kelas_kuliah', 'asc'),
                     )
                     ->getOptionLabelFromRecordUsing(fn($record) => "{$record->nama_kelas_kuliah} - {$record->matkul->nama_mata_kuliah}")
                     ->required()
+                    ->searchable()
                     ->columnSpanFull()
                     ->native(false),
                 Select::make('id_ruang')

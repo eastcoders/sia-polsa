@@ -92,12 +92,12 @@ class PresensiKelas extends Page implements HasForms
                             ->label('Pertemuan Ke-')
                             ->numeric()
                             ->required()
-                            ->disabled(fn() => $this->selectedPertemuanId !== null),
+                            ->disabled(fn() => $this->selectedPertemuanId),
                         DatePicker::make('tanggal')
                             ->label('Tanggal Pertemuan')
                             ->default(now())
                             ->required()
-                            ->disabled(fn() => $this->selectedPertemuanId !== null),
+                            ->disabled(fn() => $this->selectedPertemuanId),
                         Select::make('metode_pembelajaran')
                             ->options([
                                 'luring' => 'Luring (Offline)',
@@ -106,7 +106,7 @@ class PresensiKelas extends Page implements HasForms
                             ])
                             ->default('luring')
                             ->required()
-                            ->disabled(fn() => $this->selectedPertemuanId !== null),
+                            ->disabled(fn() => $this->selectedPertemuanId),
                         Select::make('status_pertemuan')
                             ->options([
                                 'terjadwal' => 'Terjadwal',
@@ -115,12 +115,12 @@ class PresensiKelas extends Page implements HasForms
                             ])
                             ->default('selesai')
                             ->required()
-                            ->disabled(fn() => $this->selectedPertemuanId !== null),
+                            ->disabled(fn() => $this->selectedPertemuanId),
                         Textarea::make('materi')
                             ->label('Materi Pembahasan')
                             ->rows(2)
                             ->columnSpanFull()
-                            ->disabled(fn() => $this->selectedPertemuanId !== null),
+                            ->disabled(fn() => $this->selectedPertemuanId),
                     ])->columns(2),
             ])
             ->statePath('pertemuanData');
@@ -153,9 +153,8 @@ class PresensiKelas extends Page implements HasForms
                 }
             }
         } else {
-            // Reset form and state for new entry
             $this->form->fill();
-            $this->initializeAttendanceData(); // Initialize default attendance values
+            $this->initializeAttendanceData();
         }
     }
 
