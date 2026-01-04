@@ -20,8 +20,7 @@ class DispatchSyncPenugasanDosen implements ShouldQueue
      */
     public function __construct(
         public array $filter = []
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -61,7 +60,7 @@ class DispatchSyncPenugasanDosen implements ShouldQueue
 
             // 3. Dispatch Batch
             Bus::batch($jobs)
-                ->name('Sync Penugasan Dosen (' . $totalData . ' records)')
+                ->name('Sync Penugasan Dosen ('.$totalData.' records)')
                 ->onQueue('default')
                 ->allowFailures()
                 ->dispatch();
@@ -69,7 +68,7 @@ class DispatchSyncPenugasanDosen implements ShouldQueue
             Log::info("Dispatched batch for {$totalData} penugasan dosen records.");
 
         } catch (\Exception $e) {
-            Log::error('Failed to dispatch sync penugasan dosen: ' . $e->getMessage());
+            Log::error('Failed to dispatch sync penugasan dosen: '.$e->getMessage());
             throw $e;
         }
     }

@@ -66,6 +66,9 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->navigationGroups([
                 NavigationGroup::make()
+                    ->label('Dosen & Pegawai')
+                    ->icon(Heroicon::OutlinedUsers),
+                NavigationGroup::make()
                     ->label('Perkuliahan')
                     ->icon(Heroicon::OutlinedBookOpen),
                 NavigationGroup::make()

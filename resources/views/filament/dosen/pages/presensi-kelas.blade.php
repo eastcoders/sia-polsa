@@ -46,6 +46,13 @@
                         <th scope="col" class="px-6 py-3">Nama Mahasiswa</th>
                         <th scope="col" class="px-6 py-3 w-48 pt-4">Status Kehadiran</th>
                         <th scope="col" class="px-6 py-3">Keterangan</th>
+                        
+                        <!-- Header Nilai Tugas (Hanya Muncul Jika Ada Tugas) -->
+                        @if($this->pertemuanData['ada_tugas'] ?? false)
+                        <th scope="col" class="px-6 py-3 w-32 pt-4 bg-yellow-50 text-yellow-800 border-l border-yellow-200">
+                            Nilai Tugas
+                        </th>
+                        @endif
                     </tr>
                 </thead>
                 <tbody>
@@ -81,6 +88,19 @@
                                     placeholder="Catatan..."
                                 >
                             </td>
+
+                            {{-- Input Nilai Tugas (Kondisional) --}}
+                            @if($this->pertemuanData['ada_tugas'] ?? false)
+                            <td class="px-6 py-4 bg-yellow-50 border-l border-yellow-200">
+                                <input 
+                                    type="number" 
+                                    min="0" max="100"
+                                    wire:model="tugasData.{{ $mhs->id_registrasi_mahasiswa }}.nilai"
+                                    class="bg-white border border-yellow-400 text-gray-900 text-sm rounded-lg focus:ring-yellow-500 focus:border-yellow-500 block w-full p-2.5 font-bold" 
+                                    placeholder="0"
+                                >
+                            </td>
+                            @endif
                         </tr>
                     @empty
                         <tr>

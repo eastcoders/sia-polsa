@@ -2,13 +2,13 @@
 
 namespace App\Filament\Resources\BiodataMahasiswas\Pages;
 
+use App\Filament\Resources\BiodataMahasiswas\BiodataMahasiswaResource;
+use App\Jobs\DispatchSyncMahasiswa;
 use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
-use App\Jobs\DispatchSyncMahasiswa;
-use Filament\Support\Icons\Heroicon;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
-use App\Filament\Resources\BiodataMahasiswas\BiodataMahasiswaResource;
+use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListBiodataMahasiswas extends ListRecords
@@ -37,6 +37,7 @@ class ListBiodataMahasiswas extends ListRecords
                 }),
         ];
     }
+
     protected function paginateTableQuery(Builder $query): \Illuminate\Contracts\Pagination\CursorPaginator
     {
         return $query->cursorPaginate($this->getTableRecordsPerPage());

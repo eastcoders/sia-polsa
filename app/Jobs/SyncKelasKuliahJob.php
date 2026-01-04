@@ -26,8 +26,7 @@ class SyncKelasKuliahJob implements ShouldQueue
         public int $offset,
         public array $filter = [],
         public bool $recursive = false,
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -75,7 +74,7 @@ class SyncKelasKuliahJob implements ShouldQueue
                             'sync_message' => null,
                         ];
 
-                        if (!$existing || empty($existing->id_kelas_kuliah)) {
+                        if (! $existing || empty($existing->id_kelas_kuliah)) {
                             $updateData['id_kelas_kuliah'] = $row['id_kelas_kuliah'];
                         }
 
@@ -89,7 +88,7 @@ class SyncKelasKuliahJob implements ShouldQueue
                     $successCount++;
                 } catch (\Exception $e) {
                     $errorCount++;
-                    Log::warning("SyncKelasKuliahJob: Failed to sync record {$row['id_kelas_kuliah']}: " . $e->getMessage());
+                    Log::warning("SyncKelasKuliahJob: Failed to sync record {$row['id_kelas_kuliah']}: ".$e->getMessage());
                     // Continue to next record - don't throw
                 }
             }
@@ -109,7 +108,7 @@ class SyncKelasKuliahJob implements ShouldQueue
             }
 
         } catch (\Exception $e) {
-            Log::error("Failed to fetch data for sync kelas kuliah offset {$this->offset}: " . $e->getMessage());
+            Log::error("Failed to fetch data for sync kelas kuliah offset {$this->offset}: ".$e->getMessage());
             throw $e; // Re-throw only for API fetch errors
         }
 

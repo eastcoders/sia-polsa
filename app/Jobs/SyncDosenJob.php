@@ -25,8 +25,7 @@ class SyncDosenJob implements ShouldQueue
         public int $offset,
         public array $filter = [],
         public bool $recursive = false,
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -77,7 +76,7 @@ class SyncDosenJob implements ShouldQueue
                 ]);
             }
         } catch (\Exception $e) {
-            Log::error("Failed to sync dosen at offset {$this->offset}: " . $e->getMessage());
+            Log::error("Failed to sync dosen at offset {$this->offset}: ".$e->getMessage());
             throw $e;
         }
     }

@@ -2,20 +2,19 @@
 
 namespace App\Filament\Mahasiswa\Resources;
 
-use Filament\Forms;
-use Filament\Tables;
-use Filament\Forms\Form;
-use BackedEnum, UnitEnum;
-use Filament\Tables\Table;
+use App\Filament\Mahasiswa\Resources\KelasSayaResource\Pages;
 use App\Models\KelasKuliah;
 use App\Models\Semester;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Support\Str;
+use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Resources\Resource;
-use Illuminate\Support\Facades\Auth;
+use Filament\Tables;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Filament\Mahasiswa\Resources\KelasSayaResource\Pages;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use UnitEnum;
 
 class KelasSayaResource extends Resource
 {
@@ -36,10 +35,12 @@ class KelasSayaResource extends Resource
     {
         return false;
     }
+
     public static function canEdit($record): bool
     {
         return false;
     }
+
     public static function canDelete($record): bool
     {
         return false;
@@ -51,7 +52,7 @@ class KelasSayaResource extends Resource
         $user = Auth::user();
 
         // Safety check: ensure user is logged in
-        if (!$user) {
+        if (! $user) {
             return parent::getEloquentQuery()->whereRaw('1 = 0');
         }
 
@@ -75,7 +76,7 @@ class KelasSayaResource extends Resource
                             $rxQuery->where('id_mahasiswa', $user->mahasiswa->id_mahasiswa);
                         }
                     })->with('riwayatPendidikan');
-                }
+                },
             ])
             ->whereHas('pesertaKelas', function (Builder $query) use ($user) {
                 $query->whereHas('riwayatPendidikan', function (Builder $rxQuery) use ($user) {
@@ -107,7 +108,7 @@ class KelasSayaResource extends Resource
 
                 Tables\Columns\TextColumn::make('matkul.nama_mata_kuliah')
                     ->label('Mata Kuliah')
-                    ->description(fn(KelasKuliah $record) => $record->nama_kelas_kuliah)
+                    ->description(fn (KelasKuliah $record) => $record->nama_kelas_kuliah)
                     ->searchable()
                     ->sortable(),
 
@@ -140,6 +141,7 @@ class KelasSayaResource extends Resource
                             $hari = Str::ucfirst($jadwal->hari);
                             $jamMulai = \Carbon\Carbon::parse($jadwal->jam_mulai)->format('H:i');
                             $jamSelesai = \Carbon\Carbon::parse($jadwal->jam_selesai)->format('H:i');
+
                             return <<<HTML
                             <div class="mb-2 last:mb-0">
                                 <span class="font-semibold text-primary-600 bg-primary-50 px-2 py-0.5 rounded text-xs">
@@ -156,7 +158,7 @@ HTML;
                         })->implode('');
                     })
                     ->default(function () {
-                        return <<<HTML
+                        return <<<'HTML'
                             <div class="mb-2 last:mb-0">
                                 <span class="font-semibold text-danger-600 bg-danger-50 px-2 py-0.5 rounded text-xs">
                                     Jadwal Belum Diatur
@@ -189,18 +191,18 @@ HTML;
                     ->icon('heroicon-o-clipboard-document-list')
                     ->button()
                     ->outlined()
-                    ->modalHeading(fn(KelasKuliah $record) => 'Riwayat Absensi - ' . $record->nama_kelas_kuliah)
+                    ->modalHeading(fn (KelasKuliah $record) => 'Riwayat Absensi - '.$record->nama_kelas_kuliah)
                     ->modalContent(function (KelasKuliah $record) {
                         // Optimasi query: load pertemuan dan hanya presensi mahasiswa yang bersangkutan
                         $peserta = $record->pesertaKelas->first();
                         $idRegistrasi = $peserta?->id_registrasi_mahasiswa;
 
-
                         $record->load([
                             'pertemuanKelas.presensiMahasiswas' => function ($q) use ($idRegistrasi) {
                                 $q->where('id_registrasi_mahasiswa', $idRegistrasi);
-                            }
+                            },
                         ]);
+
                         return view('filament.mahasiswa.resources.kelas-saya-resource.modals.riwayat-presensi', [
                             'record' => $record,
                         ]);

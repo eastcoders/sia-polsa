@@ -2,27 +2,27 @@
 
 namespace App\Filament\Resources\JadwalPerkuliahans;
 
+use App\Filament\Resources\JadwalPerkuliahans\Pages\ManageJadwalPerkuliahans;
+use App\Models\JadwalPerkuliahan;
 use Closure;
-use UnitEnum;
-use Filament\Tables\Table;
-use Illuminate\Support\Str;
-use Filament\Schemas\Schema;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Resources\Resource;
-use App\Models\JadwalPerkuliahan;
-use Filament\Support\Enums\Width;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\Select;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TimePicker;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Resources\Resource;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
+use Filament\Schemas\Schema;
+use Filament\Support\Enums\Width;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
-use App\Filament\Resources\JadwalPerkuliahans\Pages\ManageJadwalPerkuliahans;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
+use UnitEnum;
 
 class JadwalPerkuliahanResource extends Resource
 {
@@ -41,9 +41,9 @@ class JadwalPerkuliahanResource extends Resource
                     ->relationship(
                         'kelasKuliah',
                         'nama_kelas_kuliah',
-                        modifyQueryUsing: fn(Builder $query, Get $get) => $query->where('id_semester', $get('id_semester'))->orderBy('nama_kelas_kuliah', 'asc'),
+                        modifyQueryUsing: fn (Builder $query, Get $get) => $query->where('id_semester', $get('id_semester'))->orderBy('nama_kelas_kuliah', 'asc'),
                     )
-                    ->getOptionLabelFromRecordUsing(fn($record) => "{$record->nama_kelas_kuliah} - {$record->matkul->nama_mata_kuliah}")
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->nama_kelas_kuliah} - {$record->matkul->nama_mata_kuliah}")
                     ->required()
                     ->searchable()
                     ->columnSpanFull()
@@ -57,13 +57,13 @@ class JadwalPerkuliahanResource extends Resource
                     ->relationship(
                         'semester',
                         'nama_semester',
-                        modifyQueryUsing: fn(Builder $query) => $query->where('a_periode_aktif', 1)->orderBy('nama_semester', 'desc'),
+                        modifyQueryUsing: fn (Builder $query) => $query->where('a_periode_aktif', 1)->orderBy('nama_semester', 'desc'),
                     )
-                    ->default(fn() => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', 1)->value('id_semester'))
+                    ->default(fn () => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', 1)->value('id_semester'))
                     ->required()
                     ->native(false)
                     ->live()
-                    ->afterStateUpdated(fn(Set $set) => $set('id_kelas_kuliah', null)),
+                    ->afterStateUpdated(fn (Set $set) => $set('id_kelas_kuliah', null)),
                 Select::make('hari')
                     ->required()
                     ->native(false)
@@ -89,7 +89,7 @@ class JadwalPerkuliahanResource extends Resource
                             $jamMulai = $get('jam_mulai');
                             $kelas = $get('id_kelas_kuliah');
 
-                            if (!$ruang || !$hari || !$jamMulai || !$value) {
+                            if (! $ruang || ! $hari || ! $jamMulai || ! $value) {
                                 return;
                             }
 
@@ -98,10 +98,10 @@ class JadwalPerkuliahanResource extends Resource
                                 ->where('id_ruang', $ruang)
                                 ->where('hari', $hari)
                                 ->where(function ($query) use ($jamMulai, $value) {
-                                $query->where('jam_mulai', '<', $value)
-                                    ->where('jam_selesai', '>', $jamMulai);
-                            })
-                                ->when($record, fn($q) => $q->where('id', '!=', $record->id))
+                                    $query->where('jam_mulai', '<', $value)
+                                        ->where('jam_selesai', '>', $jamMulai);
+                                })
+                                ->when($record, fn ($q) => $q->where('id', '!=', $record->id))
                                 ->exists();
 
                             if ($bentrok) {
@@ -117,7 +117,7 @@ class JadwalPerkuliahanResource extends Resource
                                 ->where('hari', $hari)
                                 ->where('jam_mulai', $jamMulai)
                                 ->where('jam_selesai', $value)
-                                ->when($record, fn($q) => $q->where('id', '!=', $record->id))
+                                ->when($record, fn ($q) => $q->where('id', '!=', $record->id))
                                 ->exists();
 
                             if ($duplikat) {
@@ -147,24 +147,24 @@ class JadwalPerkuliahanResource extends Resource
                 TextColumn::make('kelasKuliah.prodi.nama_program_studi')
                     ->label('Program Studi')
                     ->searchable()
-                    ->formatStateUsing(fn(string $state): string => __(Str::upper($state))),
+                    ->formatStateUsing(fn (string $state): string => __(Str::upper($state))),
                 TextColumn::make('kelasKuliah.matkul.nama_mata_kuliah')
                     ->label('Mata Kuliah')
                     ->searchable(),
                 TextColumn::make('kelasKuliah.nama_kelas_kuliah')
                     ->label('Kelas')
                     ->searchable()
-                    ->formatStateUsing(fn($record, $state) => $state . ' - ' . Str::ucfirst($record->kelas_pagi_sore)),
+                    ->formatStateUsing(fn ($record, $state) => $state.' - '.Str::ucfirst($record->kelas_pagi_sore)),
                 TextColumn::make('hari')
                     ->searchable()
-                    ->formatStateUsing(fn(string $state): string => __(Str::ucfirst($state))),
+                    ->formatStateUsing(fn (string $state): string => __(Str::ucfirst($state))),
                 TextColumn::make('ruangKelas.nama_ruang_kelas')
                     ->label('Ruangan')
                     ->searchable(),
                 TextColumn::make('jam_mulai')
-                    ->time("H:i"),
+                    ->time('H:i'),
                 TextColumn::make('jam_selesai')
-                    ->time("H:i"),
+                    ->time('H:i'),
                 TextColumn::make('semester.nama_semester')
                     ->label('Semester')
                     ->searchable(),
@@ -181,7 +181,7 @@ class JadwalPerkuliahanResource extends Resource
                 \Filament\Tables\Filters\SelectFilter::make('semester')
                     ->relationship('semester', 'nama_semester')
                     ->label('Semester')
-                    ->default(fn() => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', 1)->value('id_semester'))
+                    ->default(fn () => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', 1)->value('id_semester'))
                     ->preload()
                     ->searchable(),
             ])

@@ -56,4 +56,14 @@ class KelasKuliah extends Model
     {
         return $this->hasMany(PertemuanKelas::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
     }
+
+    public function komponenBobot()
+    {
+        return $this->hasMany(KomponenBobotKelas::class, 'id_kelas_kuliah');
+    }
+
+    public function nilaiEvaluasiAkhir()
+    {
+        return $this->hasMany(NilaiEvaluasiAkhir::class, 'id_kelas_kuliah');
+    }
 }

@@ -20,8 +20,7 @@ class DispatchSyncRiwayatPendidikan implements ShouldQueue
      */
     public function __construct(
         public array $filter = []
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -53,7 +52,7 @@ class DispatchSyncRiwayatPendidikan implements ShouldQueue
             $filter = $this->filter;
 
             Bus::batch($jobs)
-                ->name('Sync Riwayat Pendidikan (' . $totalData . ' records)')
+                ->name('Sync Riwayat Pendidikan ('.$totalData.' records)')
                 ->onQueue('default')
                 ->allowFailures()
                 ->then(function (\Illuminate\Bus\Batch $batch) use ($startTime, $filter) {
@@ -65,7 +64,7 @@ class DispatchSyncRiwayatPendidikan implements ShouldQueue
             Log::info("Dispatched batch for {$totalData} riwayat pendidikan records.");
 
         } catch (\Exception $e) {
-            Log::error('Failed to dispatch sync riwayat pendidikan: ' . $e->getMessage());
+            Log::error('Failed to dispatch sync riwayat pendidikan: '.$e->getMessage());
             throw $e;
         }
     }

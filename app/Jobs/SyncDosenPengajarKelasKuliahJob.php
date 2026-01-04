@@ -4,7 +4,6 @@ namespace App\Jobs;
 
 use App\Models\DosenPengajarKelasKuliah;
 use App\Services\PddiktiClient;
-use Carbon\Carbon;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -26,8 +25,7 @@ class SyncDosenPengajarKelasKuliahJob implements ShouldQueue
         public int $offset,
         public array $filter = [],
         public bool $recursive = false,
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -67,7 +65,7 @@ class SyncDosenPengajarKelasKuliahJob implements ShouldQueue
                             'sync_message' => null,
                         ];
 
-                        if (!$existing || empty($exiting->id_aktivitas_mengajar)) {
+                        if (! $existing || empty($exiting->id_aktivitas_mengajar)) {
                             $updateData['id_aktivitas_mengajar'] = $row['id_aktivitas_mengajar'];
                         }
 
@@ -81,7 +79,7 @@ class SyncDosenPengajarKelasKuliahJob implements ShouldQueue
                     $successCount++;
                 } catch (\Exception $e) {
                     $errorCount++;
-                    Log::warning("SyncDosenPengajarKelasKuliahJob: Failed to sync record {$row['id_aktivitas_mengajar']}: " . $e->getMessage());
+                    Log::warning("SyncDosenPengajarKelasKuliahJob: Failed to sync record {$row['id_aktivitas_mengajar']}: ".$e->getMessage());
                     // Continue to next record - don't throw
                 }
             }
@@ -101,7 +99,7 @@ class SyncDosenPengajarKelasKuliahJob implements ShouldQueue
             }
 
         } catch (\Exception $e) {
-            Log::error("Failed to fetch data for sync dosen pengajar kelas kuliah offset {$this->offset}: " . $e->getMessage());
+            Log::error("Failed to fetch data for sync dosen pengajar kelas kuliah offset {$this->offset}: ".$e->getMessage());
             throw $e; // Re-throw only for API fetch errors
         }
 

@@ -24,6 +24,7 @@ class User extends Authenticatable implements FilamentUser
         'email',
         'username',
         'dosen_id',
+        'pegawai_id',
         'mahasiswa_id',
         'password',
     ];
@@ -36,6 +37,11 @@ class User extends Authenticatable implements FilamentUser
     public function mahasiswa()
     {
         return $this->belongsTo(BiodataMahasiswa::class, 'mahasiswa_id');
+    }
+
+    public function pegawai()
+    {
+        return $this->belongsTo(Pegawai::class, 'pegawai_id');
     }
 
     /**
@@ -60,6 +66,7 @@ class User extends Authenticatable implements FilamentUser
             'password' => 'hashed',
         ];
     }
+
     public function canAccessPanel(Panel $panel): bool
     {
         if ($panel->getId() === 'admin') {

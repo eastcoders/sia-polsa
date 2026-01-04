@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Models\MatkulKurikulum;
 use App\Models\PesertaKelasKuliah;
 use App\Services\PddiktiClient;
 use Illuminate\Bus\Batchable;
@@ -24,8 +23,7 @@ class SyncPesertaKelasKuliahPageJob implements ShouldQueue
         public int $limit,
         public int $offset,
         public array $filter = []
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -54,7 +52,7 @@ class SyncPesertaKelasKuliahPageJob implements ShouldQueue
                             [
                                 'id_kelas_kuliah' => $row['id_kelas_kuliah'],
                                 'id_registrasi_mahasiswa' => $row['id_registrasi_mahasiswa'],
-                            ] ,[
+                            ], [
                                 'sync_at' => now(),
                                 'sync_status' => 'synced',
                                 'sync_message' => null,
@@ -64,7 +62,7 @@ class SyncPesertaKelasKuliahPageJob implements ShouldQueue
                     $successCount++;
                 } catch (\Exception $e) {
                     $errorCount++;
-                    Log::warning("SyncPesertaKelasKuliahPageJob: Failed to sync record {$row['id_registrasi_mahasiswa']}: " . $e->getMessage());
+                    Log::warning("SyncPesertaKelasKuliahPageJob: Failed to sync record {$row['id_registrasi_mahasiswa']}: ".$e->getMessage());
                     // Continue to next record - don't throw
                 }
             }
@@ -72,7 +70,7 @@ class SyncPesertaKelasKuliahPageJob implements ShouldQueue
             Log::info("SyncPesertaKelasKuliahPageJob offset {$this->offset}: {$successCount} success, {$errorCount} errors.");
 
         } catch (\Exception $e) {
-            Log::error("Failed to fetch data for sync peserta kelas kuliah page offset {$this->offset}: " . $e->getMessage());
+            Log::error("Failed to fetch data for sync peserta kelas kuliah page offset {$this->offset}: ".$e->getMessage());
             throw $e; // Re-throw only for API fetch errors
         }
     }

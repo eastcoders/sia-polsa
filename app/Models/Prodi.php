@@ -38,7 +38,17 @@ class Prodi extends Model
     protected function programStudiLengkap(): Attribute
     {
         return Attribute::make(
-            get: fn () => $this->nama_jenjang_pendidikan.' - '.$this->nama_program_studi,
+            get: fn() => $this->nama_jenjang_pendidikan . ' - ' . $this->nama_program_studi,
         );
+    }
+
+    public function ketuaProdi()
+    {
+        return $this->belongsTo(Dosen::class, 'ketua_prodi_id');
+    }
+
+    public function dosenPembina()
+    {
+        return $this->hasMany(DosenPembinaProdi::class, 'prodi_id');
     }
 }

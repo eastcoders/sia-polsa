@@ -23,7 +23,7 @@ class RedirectIfWrongPanel
         $user = auth()->user();
 
         // If not logged in, let standard authentication handle it
-        if (!$user) {
+        if (! $user) {
             return $next($request);
         }
 
@@ -31,7 +31,7 @@ class RedirectIfWrongPanel
 
         // Admin Panel Logic
         if ($panelId === 'admin') {
-            if (!$user->hasRole('admin')) {
+            if (! $user->hasRole('admin')) {
                 if ($user->hasRole('dosen')) {
                     return redirect()->to('/dosen');
                 }
@@ -41,13 +41,14 @@ class RedirectIfWrongPanel
                 }
 
                 Filament::auth()->logout();
+
                 return redirect()->to('/admin/login');
             }
         }
 
         // Dosen Panel Logic
         if ($panelId === 'dosen') {
-            if (!$user->hasRole('dosen')) {
+            if (! $user->hasRole('dosen')) {
                 if ($user->hasRole('admin')) {
                     return redirect()->to('/admin');
                 }
@@ -57,12 +58,13 @@ class RedirectIfWrongPanel
                 }
 
                 Filament::auth()->logout();
+
                 return redirect()->to('/dosen/login');
             }
         }
 
         if ($panelId === 'mahasiswa') {
-            if (!$user->hasRole('mahasiswa')) {
+            if (! $user->hasRole('mahasiswa')) {
 
                 if ($user->hasRole('admin')) {
                     return redirect()->to('/admin');
@@ -73,6 +75,7 @@ class RedirectIfWrongPanel
                 }
 
                 Filament::auth()->logout();
+
                 return redirect()->to('/mahasiswa/login');
             }
         }

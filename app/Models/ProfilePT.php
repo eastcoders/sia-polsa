@@ -58,4 +58,24 @@ class ProfilePT extends Model implements HasMedia
             ->singleFile()
             ->useDisk('public');
     }
+
+    public function direktur()
+    {
+        return $this->belongsTo(\App\Models\Dosen::class, 'direktur_id');
+    }
+
+    public function wadir1()
+    {
+        return $this->belongsTo(\App\Models\Dosen::class, 'wadir1_id');
+    }
+
+    public function wadir2()
+    {
+        return $this->belongsTo(\App\Models\Dosen::class, 'wadir2_id');
+    }
+
+    public function wadir3()
+    {
+        return $this->belongsTo(\App\Models\Dosen::class, 'wadir3_id');
+    }
 }

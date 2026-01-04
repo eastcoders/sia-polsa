@@ -20,8 +20,7 @@ class DispatchSyncMataKuliah implements ShouldQueue
      */
     public function __construct(
         public array $filter = []
-    ) {
-    }
+    ) {}
 
     /**
      * Execute the job.
@@ -51,7 +50,7 @@ class DispatchSyncMataKuliah implements ShouldQueue
 
             // 3. Dispatch Batch
             Bus::batch($jobs)
-                ->name('Sync Mata Kuliah (' . $totalData . ' records)')
+                ->name('Sync Mata Kuliah ('.$totalData.' records)')
                 ->onQueue('default')
                 ->allowFailures()
                 ->dispatch();
@@ -59,7 +58,7 @@ class DispatchSyncMataKuliah implements ShouldQueue
             Log::info("Dispatched batch for {$totalData} mata kuliah records.");
 
         } catch (\Exception $e) {
-            Log::error('Failed to dispatch sync mata kuliah: ' . $e->getMessage());
+            Log::error('Failed to dispatch sync mata kuliah: '.$e->getMessage());
             throw $e;
         }
     }

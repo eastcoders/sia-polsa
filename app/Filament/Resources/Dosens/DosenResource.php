@@ -2,36 +2,37 @@
 
 namespace App\Filament\Resources\Dosens;
 
-use BackedEnum;
+use App\Filament\Resources\Dosens\Pages\ManageDosens;
+use App\Livewire\Dosen\RegistrasiDosen;
 use App\Models\Agama;
 use App\Models\Dosen;
-use Filament\Tables\Enums\RecordActionsPosition;
-use Filament\Tables\Table;
+use BackedEnum;
 use Filament\Actions\Action;
-use Filament\Schemas\Schema;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
-use Filament\Resources\Resource;
-use Filament\Actions\DeleteAction;
-use Filament\Support\Icons\Heroicon;
-use Filament\Actions\BulkActionGroup;
-use Filament\Forms\Components\Select;
-use Filament\Actions\DeleteBulkAction;
-use App\Livewire\Dosen\RegistrasiDosen;
-use Filament\Tables\Columns\TextColumn;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Resources\Resource;
 use Filament\Schemas\Components\Livewire;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
+use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
-use App\Filament\Resources\Dosens\Pages\ManageDosens;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+use UnitEnum;
 
 class DosenResource extends Resource
 {
     protected static ?string $model = Dosen::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserCircle;
+    protected static string|UnitEnum|null $navigationGroup = 'Dosen & Pegawai';
 
     protected static ?string $recordTitleAttribute = 'Dosen';
 
@@ -121,52 +122,73 @@ class DosenResource extends Resource
                     ->tooltip('Hapus')
                     ->disabled(fn($record) => $record->sync_at != null),
                 Action::make('create_user')
-                    ->tooltip('Buat User')
-                    ->iconButton()
-                    ->icon('heroicon-o-user-plus')
+                    ->tooltip(fn(Dosen $record) => $record->user ? 'Aktifkan Role Dosen' : 'Buat User')
+                    ->label(fn(Dosen $record) => $record->user ? 'Aktifkan Dosen' : 'Buat User')
+                    ->icon(fn(Dosen $record) => $record->user ? 'heroicon-o-shield-check' : 'heroicon-o-user-plus')
                     ->color('success')
-                    ->form([
-                        TextInput::make('email')
-                            ->email()
-                            ->required()
-                            ->label('Email Login'),
-                        TextInput::make('password')
-                            ->password()
-                            ->required()
-                            ->confirmed()
-                            ->label('Password'),
-                        TextInput::make('password_confirmation')
-                            ->password()
-                            ->required()
-                            ->label('Konfirmasi Password'),
-                    ])
-                    ->action(function (Dosen $record, array $data) {
-                        if (!$record->nidn) {
-                            \Filament\Notifications\Notification::make()
-                                ->title('Gagal')
-                                ->body('Dosen tidak memiliki NIDN, tidak bisa dijadikan Username.')
-                                ->danger()
-                                ->send();
-                            return;
+                    ->iconButton()
+                    ->requiresConfirmation(fn(Dosen $record) => $record->user !== null)
+                    ->modalHeading(fn(Dosen $record) => $record->user ? 'Tambahkan Akses Dosen?' : 'Buat Akun Baru')
+                    ->modalDescription(fn(Dosen $record) => $record->user ? 'User ini sudah memiliki akun (misal: Kaprodi). Klik Konfirmasi untuk menambahkan role Dosen.' : null)
+                    ->form(function (Dosen $record) {
+                        if ($record->user) {
+                            return [];
                         }
 
-                        $user = \App\Models\User::create([
-                            'name' => $record->nama_dosen,
-                            'email' => $data['email'],
-                            'username' => $record->nidn,
-                            'password' => \Illuminate\Support\Facades\Hash::make($data['password']),
-                            'dosen_id' => $record->id,
-                        ]);
+                        return [
+                            TextInput::make('email')
+                                ->label('Email Login')
+                                ->email()
+                                ->required(),
+                            TextInput::make('password')
+                                ->label('Password')
+                                ->password()
+                                ->confirmed()
+                                ->required(),
+                            TextInput::make('password_confirmation')
+                                ->label('Konfirmasi Password')
+                                ->password()
+                                ->required(),
+                        ];
+                    })
+                    ->action(function (Dosen $record, array $data) {
+                        $user = $record->user;
 
-                        $user->assignRole('dosen');
+                        if (!$user) {
+                            // 1. Cek User Exist by Email (Manual Input fallback)
+                            $user = \App\Models\User::where('email', $data['email'])->first();
+
+                            if ($user) {
+                                // Match by email -> Link dosen_id
+                                if (!$user->dosen_id) {
+                                    $user->dosen_id = $record->id;
+                                    $user->save();
+                                }
+                            } else {
+                                // Create User Baru
+                                $username = $record->nidn ?? $record->nip ?? explode('@', $data['email'])[0] ?? strtolower(str_replace(' ', '', $record->nama_dosen));
+
+                                $user = \App\Models\User::create([
+                                    'name' => $record->nama_dosen,
+                                    'email' => $data['email'],
+                                    'username' => $username,
+                                    'password' => \Illuminate\Support\Facades\Hash::make($data['password']),
+                                    'dosen_id' => $record->id,
+                                ]);
+                            }
+                        }
+
+                        if (!$user->hasRole('dosen')) {
+                            $user->assignRole('dosen');
+                        }
 
                         \Filament\Notifications\Notification::make()
                             ->title('Sukses')
-                            ->body('Akun user berhasil dibuat with Username: ' . $record->nidn)
+                            ->body("User {$user->name} berhasil diset sebagai Dosen.")
                             ->success()
                             ->send();
                     })
-                    ->visible(fn(Dosen $record) => $record->user === null),
+                    ->visible(fn(Dosen $record) => $record->user === null || !$record->user->hasRole('dosen')),
             ], RecordActionsPosition::BeforeColumns)
             ->toolbarActions([
                 BulkActionGroup::make([

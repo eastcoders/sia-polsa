@@ -18,8 +18,17 @@ class RoleSeeder extends Seeder
             'kaprodi',
             'direktur',
             'dosen_pengajar',
+            'dosen_pembina_akademik',
             'mahasiswa',
             'orang_tua',
+            'keuangan',
+            'wadir',
+            'kemahasiswaan',
+            'bpmi',
+            'perpustakaan',
+            'kepegawaian',
+            'sarpras',
+            'personalia',
         ];
 
         foreach ($roles as $role) {

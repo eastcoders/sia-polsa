@@ -113,9 +113,22 @@
                     </div>
 
                     {{-- Tombol Detail / Aksi --}}
-                    <a href="{{ \App\Filament\Dosen\Pages\PresensiKelas::getUrl(['record' => $kelas->id_kelas_kuliah]) }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium hover:underline focus:outline-none">
-                        Lihat Detail &rarr;
-                    </a>
+                        {{-- JURNAL & INPUT NILAI --}}
+                        <a href="{{ \App\Filament\Dosen\Pages\PresensiKelas::getUrl(['record' => $kelas->id_kelas_kuliah]) }}" class="text-indigo-600 hover:text-indigo-800 text-sm font-medium hover:underline focus:outline-none flex items-center gap-1" title="Jurnal & Penilaian Rutin">
+                            <x-heroicon-o-book-open class="w-5 h-5" />
+                            <span>Jurnal</span>
+                        </a>
+
+                        {{-- REKAP --}}
+                        <a href="{{ \App\Filament\Dosen\Pages\InputNilai::getUrl(['record' => $kelas->id_kelas_kuliah]) }}" class="text-green-600 hover:text-green-800 text-sm font-medium hover:underline focus:outline-none flex items-center gap-1" title="Rekap Nilai Akhir">
+                            <x-heroicon-o-calculator class="w-5 h-5" />
+                            <span>Rekap</span>
+                        </a>
+
+                        {{-- CONFIG --}}
+                        <a href="{{ \App\Filament\Dosen\Pages\AturBobotNilai::getUrl(['record' => $kelas->id_kelas_kuliah]) }}" class="text-gray-400 hover:text-gray-600 text-sm font-medium hover:underline focus:outline-none" title="Konfigurasi Bobot">
+                            <x-heroicon-o-cog-6-tooth class="w-5 h-5" />
+                        </a>
                 </div>
             </div>
         

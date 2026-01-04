@@ -35,7 +35,7 @@ class EditBiodataMahasiswa extends EditRecord
             $currentWilayah = Wilayah::where('id_wilayah', $data['id_wilayah'])->first();
 
             if ($currentWilayah) {
-                if ($currentWilayah->id_level_wilayah == 3) { 
+                if ($currentWilayah->id_level_wilayah == 3) {
                     $kecamatan = $currentWilayah;
                     $kabupaten = Wilayah::where('id_wilayah', trim($kecamatan->id_induk_wilayah))->first();
                     $provinsi = Wilayah::where('id_wilayah', trim($kabupaten->id_induk_wilayah))->first();

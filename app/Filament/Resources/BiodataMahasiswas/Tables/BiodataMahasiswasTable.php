@@ -4,18 +4,18 @@ namespace App\Filament\Resources\BiodataMahasiswas\Tables;
 
 use App\Models\BiodataMahasiswa;
 use App\Models\Prodi;
-use Filament\Tables\Table;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\TextInput;
-use Filament\Tables\Filters\SelectFilter;
-use Illuminate\Database\Eloquent\Builder;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
+use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class BiodataMahasiswasTable
 {
@@ -30,7 +30,7 @@ class BiodataMahasiswasTable
                     ->with([
                         'riwayatPendidikan.prodi',
                         'riwayatPendidikan.periodeDaftar',
-                        'agama'
+                        'agama',
                     ]);
             })
             ->columns([
@@ -43,7 +43,7 @@ class BiodataMahasiswasTable
                         'danger' => 'failed',
                         'gray' => 'server_deleted',
                     ])
-                    ->tooltip(fn($record) => $record->sync_message),
+                    ->tooltip(fn ($record) => $record->sync_message),
                 TextColumn::make('id')
                     ->label('No.')
                     ->rowIndex(),
@@ -84,7 +84,7 @@ class BiodataMahasiswasTable
                             ->toArray()
                     )
                     ->query(function (Builder $query, array $data): Builder {
-                        if (!empty($data['values'])) {
+                        if (! empty($data['values'])) {
                             $query->whereHas('riwayatPendidikan', function (Builder $q) use ($data) {
                                 $q->whereIn('id_prodi', $data['values']);
                             });
@@ -101,7 +101,7 @@ class BiodataMahasiswasTable
                             ->pluck('nama_semester', 'id_semester')
                             ->toArray();
                     })
-                    ->default(fn() => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', '1')->value('id_semester'))
+                    ->default(fn () => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', '1')->value('id_semester'))
                     ->preload()
                     ->searchable()
                     ->query(function (Builder $query, array $data) {
@@ -144,7 +144,7 @@ class BiodataMahasiswasTable
                         TextInput::make('email')
                             ->email()
                             ->required()
-                            ->default(fn(BiodataMahasiswa $record) => $record->email)
+                            ->default(fn (BiodataMahasiswa $record) => $record->email)
                             ->label('Email Login'),
                         TextInput::make('password')
                             ->password()
@@ -157,12 +157,13 @@ class BiodataMahasiswasTable
                             ->label('Konfirmasi Password'),
                     ])
                     ->action(function (BiodataMahasiswa $record, array $data) {
-                        if (!$record->riwayatPendidikan?->nim) {
+                        if (! $record->riwayatPendidikan?->nim) {
                             \Filament\Notifications\Notification::make()
                                 ->title('Gagal')
                                 ->body('Mahasiswa tidak memiliki NIM, tidak bisa dijadikan Username.')
                                 ->danger()
                                 ->send();
+
                             return;
                         }
 
@@ -173,6 +174,7 @@ class BiodataMahasiswasTable
                                 ->body('Email sudah digunakan oleh user lain.')
                                 ->danger()
                                 ->send();
+
                             return;
                         }
 
@@ -182,6 +184,7 @@ class BiodataMahasiswasTable
                                 ->body('NIM (Username) sudah digunakan oleh user lain.')
                                 ->danger()
                                 ->send();
+
                             return;
                         }
 
@@ -197,16 +200,16 @@ class BiodataMahasiswasTable
 
                         \Filament\Notifications\Notification::make()
                             ->title('Sukses')
-                            ->body('Akun user berhasil dibuat with Username: ' . $record->riwayatPendidikan->nim)
+                            ->body('Akun user berhasil dibuat with Username: '.$record->riwayatPendidikan->nim)
                             ->success()
                             ->send();
                     })
-                    ->visible(fn(BiodataMahasiswa $record) => $record->user === null),
+                    ->visible(fn (BiodataMahasiswa $record) => $record->user === null),
             ], position: RecordActionsPosition::BeforeColumns)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->before(fn($record) => $record?->riwayatPendidikan()?->delete()),
+                        ->before(fn ($record) => $record?->riwayatPendidikan()?->delete()),
                     BulkAction::make('push_selected')
                         ->label('Push Selected to Server')
                         ->icon('heroicon-o-cloud-arrow-up')

@@ -9,8 +9,7 @@ class PddiktiClient
 {
     public function __construct(
         protected PddiktiTokenService $tokenService
-    ) {
-    }
+    ) {}
 
     // =========================================================================
     // HELPER METHODS
@@ -31,12 +30,12 @@ class PddiktiClient
 
         $json = $response->json();
 
-        if (!$response->successful()) {
+        if (! $response->successful()) {
             throw new Exception("HTTP Error saat call $act");
         }
 
         if (($json['error_code'] ?? 1) !== 0) {
-            throw new Exception("WS Error ($act): " . ($json['error_desc'] ?? 'Tidak diketahui'));
+            throw new Exception("WS Error ($act): ".($json['error_desc'] ?? 'Tidak diketahui'));
         }
 
         return $json['data'] ?? $json;
@@ -502,6 +501,7 @@ class PddiktiClient
             'filter' => $filter['filter'] ?? '',
         ]);
     }
+
     public function getCountPesertaKelasKuliah(array $filter = [])
     {
         return $this->call('GetCountPesertaKelasKuliah', [
@@ -545,6 +545,7 @@ class PddiktiClient
             'filter' => $filter['filter'] ?? '',
         ]);
     }
+
     public function getDosenPengajarKelasKuliah(array $filter = [])
     {
         return $this->call('GetDosenPengajarKelasKuliah', [

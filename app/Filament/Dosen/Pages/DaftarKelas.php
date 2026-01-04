@@ -2,19 +2,17 @@
 
 namespace App\Filament\Dosen\Pages;
 
-use BackedEnum, UnitEnum;
-use App\Models\Dosen;
-use Filament\Forms\Get;
 use App\Models\Semester;
+use BackedEnum;
+use Filament\Facades\Filament;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Concerns\InteractsWithForms;
+use Filament\Forms\Contracts\HasForms;
 use Filament\Forms\Form;
-
 use Filament\Pages\Page;
 use Filament\Schemas\Schema;
 use Livewire\WithPagination;
-use Filament\Facades\Filament;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Forms\Concerns\InteractsWithForms;
+use UnitEnum;
 
 class DaftarKelas extends Page implements HasForms
 {
@@ -28,7 +26,6 @@ class DaftarKelas extends Page implements HasForms
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-academic-cap';
 
     protected static string|UnitEnum|null $navigationGroup = 'Perkuliahan';
-
 
     // Label navigasi
     protected static ?string $navigationLabel = 'Daftar Kelas';
@@ -60,7 +57,7 @@ class DaftarKelas extends Page implements HasForms
                             ->pluck('nama_semester', 'id_semester')
                             ->toArray() ?? [];
                     })
-                    ->default(fn() => Semester::where('a_periode_aktif', '1')->orderBy('id_semester', 'desc')->value('id_semester'))
+                    ->default(fn () => Semester::where('a_periode_aktif', '1')->orderBy('id_semester', 'desc')->value('id_semester'))
                     ->searchable()
                     ->live()
                     ->afterStateUpdated(function () {
@@ -81,7 +78,7 @@ class DaftarKelas extends Page implements HasForms
                     'kelasKuliah.matkul',
                     'kelasKuliah.prodi',
                     'kelasKuliah.semester',
-                    'kelasKuliah.jadwalPerkuliahan.ruangKelas'
+                    'kelasKuliah.jadwalPerkuliahan.ruangKelas',
                 ])
                 ->withCount('pesertaKelas');
 

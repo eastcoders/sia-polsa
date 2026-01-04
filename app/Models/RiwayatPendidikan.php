@@ -51,7 +51,7 @@ class RiwayatPendidikan extends Model
             get: function ($value, $attributes) {
                 $nim = $attributes['nim'] ?? null;
 
-                if (!$nim || strlen($nim) <= 4) {
+                if (! $nim || strlen($nim) <= 4) {
                     return 'Tidak Diketahui';
                 }
 

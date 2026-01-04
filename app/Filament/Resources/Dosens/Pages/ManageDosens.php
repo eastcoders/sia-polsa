@@ -2,15 +2,14 @@
 
 namespace App\Filament\Resources\Dosens\Pages;
 
-use App\Jobs\SyncDosenJob;
-use Illuminate\Support\Str;
-use Filament\Actions\Action;
+use App\Filament\Resources\Dosens\DosenResource;
 use App\Jobs\DispatchSyncDosen;
+use Filament\Actions\Action;
 use Filament\Actions\CreateAction;
-use Filament\Support\Icons\Heroicon;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ManageRecords;
-use App\Filament\Resources\Dosens\DosenResource;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Str;
 
 class ManageDosens extends ManageRecords
 {
