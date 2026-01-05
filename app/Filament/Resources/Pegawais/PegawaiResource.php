@@ -38,7 +38,7 @@ class PegawaiResource extends Resource
     protected static ?string $model = Pegawai::class;
     protected static string|UnitEnum|null $navigationGroup = 'Dosen & Pegawai';
 
-    protected static ?int $navigationSort = 99;
+    protected static ?int $navigationSort = 2;
 
     protected static ?string $title = 'Pegawai';
 

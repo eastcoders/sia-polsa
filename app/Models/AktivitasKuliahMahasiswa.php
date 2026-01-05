@@ -8,6 +8,11 @@ class AktivitasKuliahMahasiswa extends Model
 {
     protected $guarded = [];
 
+    protected $casts = [
+        'ipk' => 'float',
+        'ips' => 'float',
+    ];
+
     public function riwayatPendidikan()
     {
         return $this->belongsTo(RiwayatPendidikan::class, 'id_registrasi_mahasiswa', 'id_registrasi_mahasiswa');

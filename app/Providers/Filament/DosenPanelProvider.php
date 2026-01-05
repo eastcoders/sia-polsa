@@ -33,7 +33,7 @@ class DosenPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/Dosen/Resources'), for: 'App\Filament\Dosen\Resources')
             ->discoverPages(in: app_path('Filament/Dosen/Pages'), for: 'App\Filament\Dosen\Pages')
             ->pages([
-                Dashboard::class,
+                \App\Filament\Dosen\Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/Dosen/Widgets'), for: 'App\Filament\Dosen\Widgets')
             ->widgets([
