@@ -22,5 +22,6 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::unguard();
         \Livewire\Livewire::component('app.filament.auth.login', \App\Filament\Auth\Login::class);
+        \App\Models\NilaiKelasPerkuliahan::observe(\App\Observers\NilaiKelasPerkuliahanObserver::class);
     }
 }

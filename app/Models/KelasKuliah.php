@@ -9,6 +9,8 @@ class KelasKuliah extends Model
 {
     use SoftDeletes;
 
+    protected $guarded = [];
+
     public function prodi()
     {
         return $this->belongsTo(Prodi::class, 'id_prodi', 'id_prodi');
@@ -50,6 +52,11 @@ class KelasKuliah extends Model
     public function jadwalPerkuliahan()
     {
         return $this->hasMany(JadwalPerkuliahan::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
+    }
+
+    public function getRealizedMeetingsCountAttribute()
+    {
+        return $this->pertemuanKelas()->where('status_pertemuan', 'selesai')->count();
     }
 
     public function pertemuanKelas()

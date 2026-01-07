@@ -8,15 +8,7 @@ class PertemuanKelas extends Model
 {
     protected $table = 'pertemuan_kelas';
 
-    protected $fillable = [
-        'id_kelas_kuliah',
-        'id_jadwal_perkuliahan',
-        'tanggal',
-        'pertemuan_ke',
-        'materi',
-        'metode_pembelajaran',
-        'status_pertemuan',
-    ];
+    protected $guarded = [];
 
     protected $casts = [
         'tanggal' => 'date',

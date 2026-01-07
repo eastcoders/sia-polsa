@@ -56,7 +56,7 @@ class PresensiKelas extends Page implements HasForms
         // Ambil ID kelas dari query parameter ?record=...
         $this->record_id = request()->query('record');
 
-        if (! $this->record_id) {
+        if (!$this->record_id) {
             abort(404, 'Kelas tidak ditemukan.');
         }
 
@@ -79,14 +79,14 @@ class PresensiKelas extends Page implements HasForms
             $key = $mhs->id_registrasi_mahasiswa;
 
             // Set default value if key is missing
-            if (! isset($this->attendanceData[$key])) {
+            if (!isset($this->attendanceData[$key])) {
                 $this->attendanceData[$key] = [
                     'status' => 'hadir', // Default hadir agar memudahkan dosen
                     'keterangan' => null,
                 ];
             }
 
-            if (! isset($this->tugasData[$key])) {
+            if (!isset($this->tugasData[$key])) {
                 $this->tugasData[$key] = [
                     'nilai' => 0,
                     'feedback' => null,
@@ -106,12 +106,29 @@ class PresensiKelas extends Page implements HasForms
                             ->label('Pertemuan Ke-')
                             ->numeric()
                             ->required()
-                            ->disabled(fn () => $this->selectedPertemuanId),
+                            ->disabled(fn() => $this->selectedPertemuanId),
                         DatePicker::make('tanggal')
                             ->label('Tanggal Pertemuan')
                             ->default(now())
                             ->required()
-                            ->disabled(fn () => $this->selectedPertemuanId),
+                            ->disabled(fn() => $this->selectedPertemuanId)
+                            ->live()
+                            ->afterStateUpdated(function ($state, $set, $get) {
+                                if (!$state)
+                                    return;
+
+                                $service = new \App\Services\ClassScheduleValidationService();
+                                $result = $service->validateScheduleDate($state, $this->record_id);
+
+                                if ($result['status'] === 'warning') {
+                                    \Filament\Notifications\Notification::make()
+                                        ->title('Peringatan Jadwal')
+                                        ->body($result['message'])
+                                        ->warning()
+                                        ->persistent()
+                                        ->send();
+                                }
+                            }),
                         Select::make('metode_pembelajaran')
                             ->options([
                                 'luring' => 'Luring (Offline)',
@@ -120,7 +137,7 @@ class PresensiKelas extends Page implements HasForms
                             ])
                             ->default('luring')
                             ->required()
-                            ->disabled(fn () => $this->selectedPertemuanId),
+                            ->disabled(fn() => $this->selectedPertemuanId),
                         Select::make('status_pertemuan')
                             ->options([
                                 'terjadwal' => 'Terjadwal',
@@ -129,12 +146,12 @@ class PresensiKelas extends Page implements HasForms
                             ])
                             ->default('selesai')
                             ->required()
-                            ->disabled(fn () => $this->selectedPertemuanId),
+                            ->disabled(fn() => $this->selectedPertemuanId),
                         Textarea::make('materi')
                             ->label('Materi Pembahasan')
                             ->rows(2)
                             ->columnSpanFull()
-                            ->disabled(fn () => $this->selectedPertemuanId),
+                            ->disabled(fn() => $this->selectedPertemuanId),
                     ])->columns(2),
 
                 Section::make('Penugasan (Logbook)')
@@ -154,7 +171,7 @@ class PresensiKelas extends Page implements HasForms
                                 ->label('Deskripsi Tugas')
                                 ->rows(2),
                         ])
-                            ->visible(fn (Get $get) => $get('ada_tugas'))
+                            ->visible(fn(Get $get) => $get('ada_tugas'))
                             ->columnSpanFull(),
                     ])
                     ->collapsible(),
@@ -223,7 +240,7 @@ class PresensiKelas extends Page implements HasForms
 
         if ($this->selectedPertemuanId) {
             $pertemuan = PertemuanKelas::find($this->selectedPertemuanId);
-            if (! $pertemuan) {
+            if (!$pertemuan) {
                 \Filament\Notifications\Notification::make()->title('Error')->body('Data tidak ditemukan.')->danger()->send();
 
                 return;
@@ -280,7 +297,7 @@ class PresensiKelas extends Page implements HasForms
         // Retrieve class data
         $kelas = KelasKuliah::with(['matkul', 'prodi', 'semester'])->where('id_kelas_kuliah', $this->record_id)->first();
 
-        if (! $kelas) {
+        if (!$kelas) {
             abort(404, 'Kelas tidak ditemukan.');
         }
 
@@ -288,7 +305,7 @@ class PresensiKelas extends Page implements HasForms
         $historyPertemuan = PertemuanKelas::where('id_kelas_kuliah', $this->record_id)
             ->orderBy('pertemuan_ke', 'desc')
             ->get()
-            ->mapWithKeys(fn ($item) => [$item->id => "Pertemuan Ke-{$item->pertemuan_ke} ({$item->tanggal->format('d M Y')})"]);
+            ->mapWithKeys(fn($item) => [$item->id => "Pertemuan Ke-{$item->pertemuan_ke} ({$item->tanggal->format('d M Y')})"]);
 
         // Retrieve paginated participants
         $peserta = PesertaKelasKuliah::with('riwayatPendidikan.mahasiswa')

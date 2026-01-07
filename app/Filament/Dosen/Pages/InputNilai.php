@@ -17,12 +17,12 @@ use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-
+use BackedEnum;
 class InputNilai extends Page implements HasForms, HasTable
 {
     use InteractsWithForms, InteractsWithTable;
 
-    protected static \BackedEnum|string|null $navigationIcon = 'heroicon-o-pencil-square';
+    protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-pencil-square';
 
     protected string $view = 'filament.dosen.pages.input-nilai';
 
@@ -38,14 +38,30 @@ class InputNilai extends Page implements HasForms, HasTable
     {
         $this->record_id = request()->query('record');
 
-        if (! $this->record_id) {
+        if (!$this->record_id) {
             abort(404, 'Kelas tidak ditemukan.');
         }
 
         $this->kelas = KelasKuliah::with(['semester', 'prodi', 'matkul'])
             ->where('id_kelas_kuliah', $this->record_id)
             ->firstOrFail();
+
+        // Check Exam Eligibility
+        $service = new \App\Services\ClassScheduleValidationService();
+        $this->eligibilityUTS = $service->canAdministerExam($this->record_id, 'UTS');
+        $this->eligibilityUAS = $service->canAdministerExam($this->record_id, 'UAS');
+
+        if (!$this->eligibilityUTS['can_proceed']) {
+            Notification::make()->title('Input UTS Terkunci')->body($this->eligibilityUTS['message'])->warning()->persistent()->send();
+        }
+
+        if (!$this->eligibilityUAS['can_proceed']) {
+            Notification::make()->title('Input UAS Terkunci')->body($this->eligibilityUAS['message'])->warning()->persistent()->send();
+        }   
     }
+
+    public $eligibilityUTS = ['can_proceed' => true];
+    public $eligibilityUAS = ['can_proceed' => true];
 
     public function table(Table $table): Table
     {
@@ -58,15 +74,15 @@ class InputNilai extends Page implements HasForms, HasTable
             ->columns([
                 TextColumn::make('nama_lengkap')
                     ->label('Mahasiswa')
-                    ->state(fn (Model $record) => $record->riwayatPendidikan->mahasiswa->nama_lengkap ?? '-')
-                    ->description(fn (Model $record) => $record->riwayatPendidikan->nim ?? '-')
-                    ->searchable(query: fn ($query, $search) => $query->whereHas('riwayatPendidikan.mahasiswa', fn ($q) => $q->where('nama_lengkap', 'like', "%{$search}%")))
+                    ->state(fn(Model $record) => $record->riwayatPendidikan->mahasiswa->nama_lengkap ?? '-')
+                    ->description(fn(Model $record) => $record->riwayatPendidikan->nim ?? '-')
+                    ->searchable(query: fn($query, $search) => $query->whereHas('riwayatPendidikan.mahasiswa', fn($q) => $q->where('nama_lengkap', 'like', "%{$search}%")))
                     ->sortable(),
 
                 // --- READ ONLY COLUMNS FROM MENU A ---
                 TextColumn::make('presensi_pct')
                     ->label('Presensi (%)')
-                    ->state(fn (Model $record) => $this->calculatePresensiPercentage($record).'%')
+                    ->state(fn(Model $record) => $this->calculatePresensiPercentage($record) . '%')
                     ->color('gray')
                     ->icon('heroicon-o-lock-closed')
                     ->tooltip('Data diambil dari Jurnal Perkuliahan'),
@@ -86,31 +102,33 @@ class InputNilai extends Page implements HasForms, HasTable
                 TextInputColumn::make('uts')
                     ->label('UTS')
                     ->type('number')->rules(['numeric', 'min:0', 'max:100'])
-                    ->state(fn ($record) => $this->getNilaiAkhir($record, 'UTS'))
-                    ->updateStateUsing(fn ($record, $state) => $this->updateNilaiAkhir($record, 'UTS', $state)),
+                    ->disabled(!$this->eligibilityUTS['can_proceed'])
+                    ->state(fn($record) => $this->getNilaiAkhir($record, 'UTS'))
+                    ->updateStateUsing(fn($record, $state) => $this->updateNilaiAkhir($record, 'UTS', $state)),
 
                 TextInputColumn::make('uas')
                     ->label('UAS')
                     ->type('number')->rules(['numeric', 'min:0', 'max:100'])
-                    ->state(fn ($record) => $this->getNilaiAkhir($record, 'UAS'))
-                    ->updateStateUsing(fn ($record, $state) => $this->updateNilaiAkhir($record, 'UAS', $state)),
+                    ->disabled(!$this->eligibilityUAS['can_proceed'])
+                    ->state(fn($record) => $this->getNilaiAkhir($record, 'UAS'))
+                    ->updateStateUsing(fn($record, $state) => $this->updateNilaiAkhir($record, 'UAS', $state)),
 
                 TextInputColumn::make('etika')
                     ->label('Etika')
                     ->type('number')->rules(['numeric', 'min:0', 'max:100'])
-                    ->state(fn ($record) => $this->getNilaiAkhir($record, 'Etika'))
-                    ->updateStateUsing(fn ($record, $state) => $this->updateNilaiAkhir($record, 'Etika', $state)),
+                    ->state(fn($record) => $this->getNilaiAkhir($record, 'Etika'))
+                    ->updateStateUsing(fn($record, $state) => $this->updateNilaiAkhir($record, 'Etika', $state)),
 
                 TextInputColumn::make('keaktifan')
                     ->label('Keaktifan')
                     ->type('number')->rules(['numeric', 'min:0', 'max:100'])
-                    ->state(fn ($record) => $this->getNilaiAkhir($record, 'Keaktifan'))
-                    ->updateStateUsing(fn ($record, $state) => $this->updateNilaiAkhir($record, 'Keaktifan', $state)),
+                    ->state(fn($record) => $this->getNilaiAkhir($record, 'Keaktifan'))
+                    ->updateStateUsing(fn($record, $state) => $this->updateNilaiAkhir($record, 'Keaktifan', $state)),
 
                 // --- FINAL SCORE ---
                 TextColumn::make('nilai_akhir')
                     ->label('NA (Angka)')
-                    ->state(fn (Model $record) => $this->calculateFinalScore($record))
+                    ->state(fn(Model $record) => $this->calculateFinalScore($record))
                     ->weight('bold')
                     ->color('success'),
             ])
@@ -176,7 +194,7 @@ class InputNilai extends Page implements HasForms, HasTable
     protected function calculateFinalScore($record)
     {
         static $weights = null;
-        if (! $weights) {
+        if (!$weights) {
             $weights = KomponenBobotKelas::where('id_kelas_kuliah', $this->record_id)
                 ->pluck('bobot', 'nama_komponen');
         }

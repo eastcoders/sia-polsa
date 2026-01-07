@@ -36,6 +36,8 @@ class RiwayatPendidikan extends Model
         return $this->hasOne(BiodataMahasiswa::class, 'id_mahasiswa', 'id_mahasiswa');
     }
 
+
+
     public function nilaiKuliah()
     {
         return $this->belongsTo(NilaiKelasPerkuliahan::class, 'id_registrasi_mahasiswa', 'id_registrasi_mahasiswa');
@@ -51,7 +53,7 @@ class RiwayatPendidikan extends Model
             get: function ($value, $attributes) {
                 $nim = $attributes['nim'] ?? null;
 
-                if (! $nim || strlen($nim) <= 4) {
+                if (!$nim || strlen($nim) <= 4) {
                     return 'Tidak Diketahui';
                 }
 

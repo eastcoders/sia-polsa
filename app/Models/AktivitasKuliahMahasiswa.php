@@ -11,7 +11,14 @@ class AktivitasKuliahMahasiswa extends Model
     protected $casts = [
         'ipk' => 'float',
         'ips' => 'float',
+        'khs_is_approved' => 'boolean',
+        'khs_approved_at' => 'datetime',
     ];
+
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'khs_approved_by');
+    }
 
     public function riwayatPendidikan()
     {
