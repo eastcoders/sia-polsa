@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Str;
 
 class RiwayatPendidikan extends Model
 {
@@ -51,6 +52,14 @@ class RiwayatPendidikan extends Model
     {
         return \Illuminate\Database\Eloquent\Casts\Attribute::make(
             get: function ($value, $attributes) {
+                // ALL CAPS for comparison to match DB convention (usually 'Pagi'/'Sore')
+    
+                // 1. Level 2: Global Override from Database
+                if (!empty($attributes['pilihan_waktu'])) {
+                    return Str::ucfirst($attributes['pilihan_waktu']);
+                }
+
+                // 2. Level 3: Default Fallback to NIM Parsing
                 $nim = $attributes['nim'] ?? null;
 
                 if (!$nim || strlen($nim) <= 4) {

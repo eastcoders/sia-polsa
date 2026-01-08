@@ -25,7 +25,8 @@ class SyncRiwayatPendidikanPageJob implements ShouldQueue
         public int $limit,
         public int $offset,
         public array $filter = []
-    ) {}
+    ) {
+    }
 
     /**
      * Execute the job.
@@ -73,12 +74,29 @@ class SyncRiwayatPendidikanPageJob implements ShouldQueue
                             'id_biodata_mahasiswa' => $row['id_registrasi_mahasiswa'],
                         ];
 
+                        // Auto-populate pilihan_waktu based on NIM (if not already set)
+                        // This preserves manual overrides (Mutasi) if they exist.
+                        if (!$existing || empty($existing->pilihan_waktu)) {
+                            $nim = $row['nim'] ?? null;
+                            if ($nim && strlen($nim) > 4) {
+                                $kode = substr($nim, 4, 1);
+                                $pilihan = match ($kode) {
+                                    '1' => 'pagi',
+                                    '2' => 'sore',
+                                    default => null,
+                                };
+                                if ($pilihan) {
+                                    $updateData['pilihan_waktu'] = $pilihan;
+                                }
+                            }
+                        }
+
                         // Strategi ID aman: Hanya set ID jika record baru atau kolom kosong
-                        if (! $existing || empty($existing->id_registrasi_mahasiswa)) {
+                        if (!$existing || empty($existing->id_registrasi_mahasiswa)) {
                             $updateData['id_registrasi_mahasiswa'] = $row['id_registrasi_mahasiswa'];
                         }
 
-                        if (! $existing || empty($existing->id_mahasiswa)) {
+                        if (!$existing || empty($existing->id_mahasiswa)) {
                             $updateData['id_mahasiswa'] = $row['id_mahasiswa'];
                         }
 
@@ -90,7 +108,7 @@ class SyncRiwayatPendidikanPageJob implements ShouldQueue
                     $successCount++;
                 } catch (\Exception $e) {
                     $errorCount++;
-                    Log::warning("SyncRiwayatPendidikanPageJob: Failed to sync record {$row['id_registrasi_mahasiswa']}: ".$e->getMessage());
+                    Log::warning("SyncRiwayatPendidikanPageJob: Failed to sync record {$row['id_registrasi_mahasiswa']}: " . $e->getMessage());
                     // Continue to next record - don't throw
                 }
             }
@@ -98,7 +116,7 @@ class SyncRiwayatPendidikanPageJob implements ShouldQueue
             Log::info("SyncRiwayatPendidikanPageJob offset {$this->offset}: {$successCount} success, {$errorCount} errors.");
 
         } catch (\Exception $e) {
-            Log::error("Failed to fetch data for sync riwayat pendidikan page offset {$this->offset}: ".$e->getMessage());
+            Log::error("Failed to fetch data for sync riwayat pendidikan page offset {$this->offset}: " . $e->getMessage());
             throw $e; // Re-throw only for API fetch errors
         }
     }

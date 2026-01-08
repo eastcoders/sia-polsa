@@ -52,7 +52,7 @@ class KelasSayaResource extends Resource
         $user = Auth::user();
 
         // Safety check: ensure user is logged in
-        if (! $user) {
+        if (!$user) {
             return parent::getEloquentQuery()->whereRaw('1 = 0');
         }
 
@@ -108,7 +108,7 @@ class KelasSayaResource extends Resource
 
                 Tables\Columns\TextColumn::make('matkul.nama_mata_kuliah')
                     ->label('Mata Kuliah')
-                    ->description(fn (KelasKuliah $record) => $record->nama_kelas_kuliah)
+                    ->description(fn(KelasKuliah $record) => $record->nama_kelas_kuliah)
                     ->searchable()
                     ->sortable(),
 
@@ -119,11 +119,21 @@ class KelasSayaResource extends Resource
                         // The pesertaKelas relation is already filtered in getEloquentQuery to only include
                         // the current user's participation. So we can just take the first one.
                         $peserta = $record->pesertaKelas->first();
-                        $shift = $peserta?->riwayatPendidikan->waktu_kuliah;
+
+                        // 3-Layer Logic Gate Strategy:
+                        // 1. Enrollment Specific (pilihan_waktu in peseta_kelas_kuliahs)
+                        // 2. Global Preference (pilihan_waktu in riwayat_pendidikans - handled by accessor)
+                        // 3. NIM Parsing (handled by accessor)
+            
+                        $shiftEnrollment = $peserta?->pilihan_waktu;
+                        $shiftGlobal = $peserta?->riwayatPendidikan->waktu_kuliah;
+
+                        // Use enrollment specific if available, otherwise global/default
+                        $shift = $shiftEnrollment ? Str::ucfirst($shiftEnrollment) : $shiftGlobal;
 
                         $jadwals = $record->jadwalPerkuliahan;
 
-                        if ($shift) {
+                        if ($shift && $shift !== 'Tidak Diketahui') {
                             $jadwals = $jadwals->filter(function ($jadwal) use ($shift) {
                                 // Filter schedule based on student's shift (Pagi/Sore).
                                 // If schedule has no shift specified, it applies to all.
@@ -191,7 +201,7 @@ HTML;
                     ->icon('heroicon-o-clipboard-document-list')
                     ->button()
                     ->outlined()
-                    ->modalHeading(fn (KelasKuliah $record) => 'Riwayat Absensi - '.$record->nama_kelas_kuliah)
+                    ->modalHeading(fn(KelasKuliah $record) => 'Riwayat Absensi - ' . $record->nama_kelas_kuliah)
                     ->modalContent(function (KelasKuliah $record) {
                         // Optimasi query: load pertemuan dan hanya presensi mahasiswa yang bersangkutan
                         $peserta = $record->pesertaKelas->first();

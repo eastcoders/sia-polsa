@@ -55,7 +55,7 @@ class HistoriPendidikan extends Page implements HasTable
 
     public function getTitle(): string|Htmlable
     {
-        return 'Histori Pendidikan - '.$this->record->nama_lengkap;
+        return 'Histori Pendidikan - ' . $this->record->nama_lengkap;
     }
 
     protected string $view = 'filament.resources.biodata-mahasiswas.pages.histori-pendidikan';
@@ -79,12 +79,21 @@ class HistoriPendidikan extends Page implements HasTable
                         'danger' => 'failed',
                         'gray' => 'server_deleted',
                     ])
-                    ->tooltip(fn ($record) => $record->sync_message),
+                    ->tooltip(fn($record) => $record->sync_message),
                 TextColumn::make('id')
                     ->label('No.')
                     ->rowIndex(),
                 TextColumn::make('nim')
                     ->label('NIM'),
+
+                TextColumn::make('pilihan_waktu')
+                    ->label('Waktu')
+                    ->badge()
+                    ->formatStateUsing(fn($state) => $state ? Str::ucfirst($state) : '-')
+                    ->colors([
+                        'info' => 'pagi',
+                        'warning' => 'sore',
+                    ]),
 
                 TextColumn::make('prodi.nama_program_studi')
                     ->label('Program Studi'),
@@ -109,7 +118,7 @@ class HistoriPendidikan extends Page implements HasTable
                     ->modalHeading('Detail Riwayat Pendidikan')
                     ->schema($this->getRiwayatPendidikanFormSchema())
                     ->tooltip('Detail')
-                    ->fillForm(fn (RiwayatPendidikan $record): array => $record->toArray())
+                    ->fillForm(fn(RiwayatPendidikan $record): array => $record->toArray())
                     ->modalWidth('4xl')
                     ->disabledSchema()
                     ->iconButton()
@@ -120,8 +129,8 @@ class HistoriPendidikan extends Page implements HasTable
                 Action::make('edit')
                     ->modalHeading('Detail Riwayat Pendidikan')
                     ->schema($this->getRiwayatPendidikanFormSchema())
-                    ->fillForm(fn (RiwayatPendidikan $record): array => $record->toArray())
-                    ->mutateDataUsing(fn (array $data): array => $data)
+                    ->fillForm(fn(RiwayatPendidikan $record): array => $record->toArray())
+                    ->mutateDataUsing(fn(array $data): array => $data)
                     ->modalWidth('4xl')
                     ->tooltip('Edit Data')
                     ->iconButton()
@@ -160,7 +169,7 @@ class HistoriPendidikan extends Page implements HasTable
                     ->iconButton()
                     ->tooltip('Hapus')
                     ->color('danger')
-                    ->disabled(fn (RiwayatPendidikan $record): bool => $record->id_server != null)
+                    ->disabled(fn(RiwayatPendidikan $record): bool => $record->id_server != null)
                     ->icon('heroicon-m-trash')
                     ->action(function (RiwayatPendidikan $record) {
                         $record->delete();
@@ -215,26 +224,35 @@ class HistoriPendidikan extends Page implements HasTable
                 ->schema([
                     TextInput::make('nim')
                         ->label('NIM')
-                        ->disabled(fn ($record) => $record->id_server != null)
+                        ->disabled(fn($record) => $record->id_server != null)
                         ->required(),
+
+                    Select::make('pilihan_waktu')
+                        ->label('Waktu Kuliah')
+                        ->options([
+                            'pagi' => 'Pagi',
+                            'sore' => 'Sore',
+                        ])
+                        ->native(false)
+                        ->helperText('Override waktu kuliah (Default: Sesuai NIM)'),
 
                     Select::make('id_jenis_daftar')
                         ->required()
                         ->label('Jenis Pendaftaran')
-                        ->options(fn () => JenisPendaftaran::orderBy('id_jenis_daftar')->pluck('nama_jenis_daftar', 'id_jenis_daftar'))
+                        ->options(fn() => JenisPendaftaran::orderBy('id_jenis_daftar')->pluck('nama_jenis_daftar', 'id_jenis_daftar'))
                         ->searchable()
                         ->live(),
 
                     Select::make('id_jalur_daftar')
                         ->required()
                         ->label('Jalur Pendaftaran')
-                        ->options(fn () => JalurMasuk::orderBy('id_jalur_masuk')->pluck('nama_jalur_masuk', 'id_jalur_masuk'))
+                        ->options(fn() => JalurMasuk::orderBy('id_jalur_masuk')->pluck('nama_jalur_masuk', 'id_jalur_masuk'))
                         ->searchable(),
 
                     Select::make('id_periode_masuk')
                         ->label('Periode Masuk')
                         ->required()
-                        ->options(fn () => Semester::where('a_periode_aktif', '1')
+                        ->options(fn() => Semester::where('a_periode_aktif', '1')
                             ->orderBy('id_semester')->pluck('nama_semester', 'id_semester'))
                         ->searchable(),
 
@@ -245,7 +263,7 @@ class HistoriPendidikan extends Page implements HasTable
                     Select::make('id_pembiayaan')
                         ->required()
                         ->label('Pembiayaan')
-                        ->options(fn () => Pembiayaan::orderBy('id_pembiayaan')->pluck('nama_pembiayaan', 'id_pembiayaan')),
+                        ->options(fn() => Pembiayaan::orderBy('id_pembiayaan')->pluck('nama_pembiayaan', 'id_pembiayaan')),
 
                     TextInput::make('biaya_masuk')
                         ->label('Biaya Masuk')
@@ -262,30 +280,30 @@ class HistoriPendidikan extends Page implements HasTable
                         ->required()
                         ->label('Fakultas/Program Studi')
                         ->searchable()
-                        ->options(fn () => Prodi::orderBy('id_prodi')->pluck('nama_program_studi', 'id_prodi')),
+                        ->options(fn() => Prodi::orderBy('id_prodi')->pluck('nama_program_studi', 'id_prodi')),
 
                     Select::make('id_bidang_minat')
                         ->label('Peminatan')
-                        ->options(fn () => BidangMinat::orderBy('id_bidang_minat')->pluck('nm_bidang_minat', 'id_bidang_minat')),
+                        ->options(fn() => BidangMinat::orderBy('id_bidang_minat')->pluck('nm_bidang_minat', 'id_bidang_minat')),
 
                     Select::make('id_perguruan_tinggi_asal')
-                        ->required(fn (Get $get) => filled($get('id_jenis_daftar')) && $get('id_jenis_daftar') != '1')
-                        ->visible(fn (Get $get) => filled($get('id_jenis_daftar')) && $get('id_jenis_daftar') != '1')
+                        ->required(fn(Get $get) => filled($get('id_jenis_daftar')) && $get('id_jenis_daftar') != '1')
+                        ->visible(fn(Get $get) => filled($get('id_jenis_daftar')) && $get('id_jenis_daftar') != '1')
                         ->label('Perguruan Tinggi Asal')
                         ->searchable()
-                        ->options(fn () => PerguruanTinggi::orderBy('nama_perguruan_tinggi')->pluck('nama_perguruan_tinggi', 'id_perguruan_tinggi'))
+                        ->options(fn() => PerguruanTinggi::orderBy('nama_perguruan_tinggi')->pluck('nama_perguruan_tinggi', 'id_perguruan_tinggi'))
                         ->live()
-                        ->afterStateUpdated(fn (Set $set) => $set('id_prodi_asal', null)),
+                        ->afterStateUpdated(fn(Set $set) => $set('id_prodi_asal', null)),
 
                     Select::make('id_prodi_asal')
-                        ->required(fn (Get $get) => filled($get('id_jenis_daftar')) && $get('id_jenis_daftar') != '1')
-                        ->visible(fn (Get $get) => filled($get('id_jenis_daftar')) && $get('id_jenis_daftar') != '1')
+                        ->required(fn(Get $get) => filled($get('id_jenis_daftar')) && $get('id_jenis_daftar') != '1')
+                        ->visible(fn(Get $get) => filled($get('id_jenis_daftar')) && $get('id_jenis_daftar') != '1')
                         ->label('Fakultas/Program Studi Asal')
                         ->searchable()
                         ->options(function (Get $get) {
                             $idPt = $get('id_perguruan_tinggi_asal');
 
-                            if (! $idPt) {
+                            if (!$idPt) {
                                 return [];
                             }
 
@@ -295,11 +313,11 @@ class HistoriPendidikan extends Page implements HasTable
                                 ->get()
                                 ->mapWithKeys(function ($item) {
                                     return [
-                                        $item->id_prodi => $item->nama_jenjang_pendidikan.' - '.$item->nama_program_studi,
+                                        $item->id_prodi => $item->nama_jenjang_pendidikan . ' - ' . $item->nama_program_studi,
                                     ];
                                 });
                         })
-                        ->disabled(fn (Get $get) => blank($get('id_perguruan_tinggi_asal'))),
+                        ->disabled(fn(Get $get) => blank($get('id_perguruan_tinggi_asal'))),
                 ]),
         ];
     }

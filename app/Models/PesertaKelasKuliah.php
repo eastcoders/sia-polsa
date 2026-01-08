@@ -9,6 +9,8 @@ class PesertaKelasKuliah extends Model
 {
     use SoftDeletes;
 
+    protected $guarded = [];
+
     public function riwayatPendidikan()
     {
         return $this->belongsTo(RiwayatPendidikan::class, 'id_registrasi_mahasiswa', 'id_registrasi_mahasiswa');

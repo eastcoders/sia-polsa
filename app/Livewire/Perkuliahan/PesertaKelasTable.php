@@ -13,6 +13,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Concerns\InteractsWithSchemas;
 use Filament\Schemas\Contracts\HasSchemas;
+use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
@@ -32,7 +33,7 @@ class PesertaKelasTable extends Component implements HasActions, HasSchemas, Has
     public function table(Table $table): Table
     {
         return $table
-            ->query(fn () => PesertaKelasKuliah::where('id_kelas_kuliah', $this->record->id_kelas_kuliah))
+            ->query(fn() => PesertaKelasKuliah::where('id_kelas_kuliah', $this->record->id_kelas_kuliah))
             ->columns([
                 TextColumn::make('id')
                     ->label('No.')
@@ -49,6 +50,14 @@ class PesertaKelasTable extends Component implements HasActions, HasSchemas, Has
                     ->label('Program Studi'),
                 TextColumn::make('riwayatPendidikan.periodeDaftar.id_tahun_ajaran')
                     ->label('Angkatan'),
+                SelectColumn::make('pilihan_waktu')
+                    ->label('Waktu')
+                    ->options([
+                        'pagi' => 'Pagi',
+                        'sore' => 'Sore',
+                    ])
+                    ->selectablePlaceholder(false)
+                    ->tooltip('Override spesifik untuk kelas ini'),
             ])
             ->filters([
                 //
