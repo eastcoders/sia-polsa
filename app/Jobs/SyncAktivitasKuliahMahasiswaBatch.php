@@ -42,7 +42,7 @@ class SyncAktivitasKuliahMahasiswaBatch extends BaseSyncJob implements ShouldQue
                         'sks_total' => $row['sks_total'],
                         'biaya_kuliah_smt' => $row['biaya_kuliah_smt'],
                         'id_pembiayaan' => $row['id_pembiayaan'] ?? null,
-                        'id_server' => $row['id_registrasi_mahasiswa'], // Usually referencing ID for AKM is composite, but assuming local tracking needs something
+                        'id_server' => null, // id_registrasi is not unique for this table, and we don't have a specific ID from source
                         'sync_at' => now(),
                         'sync_status' => 'synced',
                         'sync_message' => null,
@@ -63,6 +63,6 @@ class SyncAktivitasKuliahMahasiswaBatch extends BaseSyncJob implements ShouldQue
 
     protected function getRecordId(array $row): string
     {
-        return ($row['id_registrasi_mahasiswa'] ?? '?').'-'.($row['id_semester'] ?? '?');
+        return ($row['id_registrasi_mahasiswa'] ?? '?') . '-' . ($row['id_semester'] ?? '?');
     }
 }

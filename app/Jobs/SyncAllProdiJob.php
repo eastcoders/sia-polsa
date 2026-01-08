@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class SyncAllProdiJob implements ShouldQueue
 {
-    use Queueable;
+    use \Illuminate\Bus\Batchable, Queueable;
 
     /**
      * Create a new job instance.

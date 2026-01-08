@@ -23,7 +23,7 @@ class KalenderAkademikResource extends Resource
 {
     protected static ?string $model = KalenderAkademik::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
 
     public static function form(Schema $schema): Schema
     {
@@ -35,11 +35,15 @@ class KalenderAkademikResource extends Resource
                     ->required(),
                 TextInput::make('keterangan')
                     ->required(),
+                \Filament\Forms\Components\Select::make('id_semester')
+                    ->label('Semester')
+                    ->searchable()
+                    ->options(\App\Models\Semester::where('a_periode_aktif', '1')->orderBy('id_tahun_ajaran', 'desc')->pluck('nama_semester', 'id_semester'))
+                    ->preload(),
                 Toggle::make('is_libur')
                     ->required(),
                 Toggle::make('is_minggu_ujian')
                     ->required(),
-                TextInput::make('id_semester'),
             ]);
     }
 
@@ -70,6 +74,7 @@ class KalenderAkademikResource extends Resource
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
+            ->defaultSort('tanggal_mulai')
             ->filters([
                 //
             ])

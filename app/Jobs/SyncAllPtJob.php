@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class SyncAllPtJob implements ShouldQueue
 {
-    use Queueable;
+    use \Illuminate\Bus\Batchable, Queueable;
 
     /**
      * Create a new job instance.
@@ -25,23 +25,25 @@ class SyncAllPtJob implements ShouldQueue
      */
     public function handle(PddiktiClient $client): void
     {
-        $data = $client->getAllPerguruanTinggi();
+        $data = collect($client->getAllPerguruanTinggi());
 
-        DB::transaction(function () use ($data) {
-            foreach ($data as $row) {
-                PerguruanTinggi::updateOrCreate(
-                    [
-                        'id_perguruan_tinggi' => trim($row['id_perguruan_tinggi']),
-                    ],
-                    [
-                        'id_perguruan_tinggi' => trim($row['id_perguruan_tinggi']),
-                        'nama_perguruan_tinggi' => trim($row['nama_perguruan_tinggi']),
-                        'nama_singkat' => trim($row['nama_singkat']),
-                        'kode_perguruan_tinggi' => $row['kode_perguruan_tinggi'],
-                        'sync_at' => now(),
-                    ]
-                );
-            }
+        // Process in chunks locally since we fetched all
+        $data->chunk(1000)->each(function ($chunk) {
+            $rows = $chunk->map(function ($row) {
+                return [
+                    'id_perguruan_tinggi' => trim($row['id_perguruan_tinggi']),
+                    'nama_perguruan_tinggi' => trim($row['nama_perguruan_tinggi']),
+                    'nama_singkat' => trim($row['nama_singkat']),
+                    'kode_perguruan_tinggi' => $row['kode_perguruan_tinggi'],
+                    'sync_at' => now(),
+                ];
+            })->toArray();
+
+            DB::table('perguruan_tinggis')->upsert(
+                $rows,
+                ['id_perguruan_tinggi'],
+                ['nama_perguruan_tinggi', 'nama_singkat', 'kode_perguruan_tinggi', 'sync_at']
+            );
         });
     }
 }

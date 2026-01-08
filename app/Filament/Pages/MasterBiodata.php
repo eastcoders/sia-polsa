@@ -48,6 +48,22 @@ class MasterBiodata extends Page implements HasActions, HasSchemas
                         ->success()
                         ->send();
                 }),
+            Action::make('sync_referensi')
+                ->label('Sync Data Referensi (Wilayah, PT, Prodi)')
+                ->icon('heroicon-o-globe-alt')
+                ->color('success')
+                ->requiresConfirmation()
+                ->modalHeading('Konfirmasi Sinkronisasi Referensi')
+                ->modalDescription('Apakah Anda yakin ingin menjalankan sinkronisasi data referensi (Wilayah, PT, Prodi)?')
+                ->action(function () {
+                    \App\Jobs\DispatchSyncReferenceData::dispatch();
+
+                    Notification::make()
+                        ->title('Sinkronisasi Referensi Dimulai')
+                        ->body('Proses sinkronisasi data referensi sedang berjalan di belakang layar.')
+                        ->success()
+                        ->send();
+                }),
         ];
     }
 }

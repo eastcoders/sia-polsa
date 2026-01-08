@@ -36,7 +36,9 @@ class SyncWilayahJob implements ShouldQueue
      */
     public int $tries = 3;
 
-    public function __construct() {}
+    public function __construct()
+    {
+    }
 
     /**
      * Execute the job.
@@ -75,7 +77,7 @@ class SyncWilayahJob implements ShouldQueue
                 $totalSynced += $chunkCount;
                 $offset += $this->chunkSize;
 
-                Log::info('SyncWilayahJob: Synced chunk at offset '.($offset - $this->chunkSize).", count: {$chunkCount}, total: {$totalSynced}");
+                Log::info('SyncWilayahJob: Synced chunk at offset ' . ($offset - $this->chunkSize) . ", count: {$chunkCount}, total: {$totalSynced}");
 
                 // Jika data kurang dari chunk size, berarti ini chunk terakhir
                 if ($chunkCount < $this->chunkSize) {
@@ -83,7 +85,7 @@ class SyncWilayahJob implements ShouldQueue
                 }
 
             } catch (\Exception $e) {
-                Log::error("SyncWilayahJob: Error at offset {$offset}: ".$e->getMessage());
+                Log::error("SyncWilayahJob: Error at offset {$offset}: " . $e->getMessage());
                 throw $e; // Re-throw untuk retry mechanism
             }
         }
@@ -94,33 +96,32 @@ class SyncWilayahJob implements ShouldQueue
     /**
      * Process satu chunk data dalam transaction.
      */
+    /**
+     * Process satu chunk data dalam transaction.
+     */
     protected function processChunk(array $data): void
     {
-        $successCount = 0;
-        $errorCount = 0;
+        $rows = collect($data)->map(function ($row) {
+            return [
+                'id_wilayah' => trim($row['id_wilayah']),
+                'id_negara' => trim($row['id_negara'] ?? ''),
+                'nama_wilayah' => $row['nama_wilayah'] ?? '',
+                'id_level_wilayah' => $row['id_level_wilayah'] ?? null,
+                'id_induk_wilayah' => trim($row['id_induk_wilayah'] ?? ''),
+                'sync_at' => now(),
+            ];
+        })->toArray();
 
-        foreach ($data as $row) {
-            try {
-                Wilayah::updateOrCreate(
-                    ['id_wilayah' => trim($row['id_wilayah'])],
-                    [
-                        'id_negara' => trim($row['id_negara'] ?? ''),
-                        'nama_wilayah' => $row['nama_wilayah'] ?? '',
-                        'id_level_wilayah' => $row['id_level_wilayah'] ?? null,
-                        'id_induk_wilayah' => trim($row['id_induk_wilayah'] ?? ''),
-                        'sync_at' => now(),
-                    ]
-                );
-                $successCount++;
-            } catch (\Exception $e) {
-                $errorCount++;
-                Log::warning("SyncWilayahJob: Failed to sync wilayah {$row['id_wilayah']}: ".$e->getMessage());
-                // Continue to next record
-            }
-        }
-
-        if ($errorCount > 0) {
-            Log::warning("SyncWilayahJob: Chunk completed with {$errorCount} errors, {$successCount} success.");
+        // Gunakan upsert untuk bulk insert/update
+        try {
+            \Illuminate\Support\Facades\DB::table('wilayahs')->upsert(
+                $rows,
+                ['id_wilayah'], // Unique key
+                ['id_negara', 'nama_wilayah', 'id_level_wilayah', 'id_induk_wilayah', 'sync_at'] // Update columns
+            );
+        } catch (\Exception $e) {
+            Log::error("SyncWilayahJob: Upsert failed: " . $e->getMessage());
+            throw $e;
         }
     }
 }
