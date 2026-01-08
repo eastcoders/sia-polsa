@@ -73,4 +73,8 @@ class KelasKuliah extends Model
     {
         return $this->hasMany(NilaiEvaluasiAkhir::class, 'id_kelas_kuliah');
     }
+    public function jadwalUjians()
+    {
+        return $this->hasMany(JadwalUjian::class, 'id_kelas_kuliah', 'id_kelas_kuliah');
+    }
 }
