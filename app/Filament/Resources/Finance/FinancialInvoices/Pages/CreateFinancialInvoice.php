@@ -1,0 +1,11 @@
+<?php
+
+namespace App\Filament\Resources\Finance\FinancialInvoices\Pages;
+
+use App\Filament\Resources\Finance\FinancialInvoices\FinancialInvoiceResource;
+use Filament\Resources\Pages\CreateRecord;
+
+class CreateFinancialInvoice extends CreateRecord
+{
+    protected static string $resource = FinancialInvoiceResource::class;
+}

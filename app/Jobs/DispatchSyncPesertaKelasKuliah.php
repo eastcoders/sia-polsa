@@ -40,7 +40,7 @@ class DispatchSyncPesertaKelasKuliah implements ShouldQueue
             }
 
             // 2. Calculate Batches
-            $batchSize = 300;
+            $batchSize = 1000;
             $jobs = [];
 
             for ($offset = 0; $offset < $totalData; $offset += $batchSize) {

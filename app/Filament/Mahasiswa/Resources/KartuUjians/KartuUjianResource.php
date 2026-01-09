@@ -57,8 +57,17 @@ class KartuUjianResource extends Resource
             ->published();
     }
 
+    public static function checkGatekeeper(): int
+    {
+        return \App\Models\SurveyTicket::where('user_id', auth()->id())
+            ->where('status', 'PENDING')
+            ->count();
+    }
+
     public static function table(Table $table): Table
     {
+        $pendingSurveys = self::checkGatekeeper();
+
         return $table
             ->columns([
                 TextColumn::make('kelasKuliah.matkul.kode_mata_kuliah')
@@ -97,14 +106,26 @@ class KartuUjianResource extends Resource
                     ),
             ])
             ->actions([
-                Action::make('cetak')
+                \Filament\Tables\Actions\Action::make('cetak')
                     ->label('Cetak Kartu')
                     ->icon('heroicon-o-printer')
                     ->button()
                     ->outlined()
                     ->url('#') // Placeholder route
-                    ->openUrlInNewTab(),
-            ]);
+                    ->openUrlInNewTab()
+                    ->visible($pendingSurveys === 0)
+                    ->tooltip('Anda dapat mencetak kartu ujian setelah semua kuesioner terisi.'),
+
+                \Filament\Tables\Actions\Action::make('blocked')
+                    ->label('Kuesioner Belum Lengkap')
+                    ->icon('heroicon-o-lock-closed')
+                    ->color('danger')
+                    ->button()
+                    ->url('/mahasiswa/isi-kuesioner')
+                    ->visible($pendingSurveys > 0),
+            ])
+            ->emptyStateHeading('Belum ada jadwal ujian')
+            ->emptyStateDescription('Jika ujian sudah dekat, hubungi bagian akademik.');
     }
 
     public static function getPages(): array

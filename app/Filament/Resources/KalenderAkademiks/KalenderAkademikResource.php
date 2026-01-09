@@ -4,7 +4,7 @@ namespace App\Filament\Resources\KalenderAkademiks;
 
 use App\Filament\Resources\KalenderAkademiks\Pages\ManageKalenderAkademiks;
 use App\Models\KalenderAkademik;
-use BackedEnum;
+use UnitEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -23,7 +23,8 @@ class KalenderAkademikResource extends Resource
 {
     protected static ?string $model = KalenderAkademik::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCalendar;
+    protected static string|UnitEnum|null $navigationGroup = 'Akademik';
+
 
     public static function form(Schema $schema): Schema
     {
