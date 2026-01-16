@@ -13,9 +13,14 @@ class FeeComponentForm
         return $schema
             ->components([
                 TextInput::make('name')
+                    ->label('Nama Komponen')
                     ->required(),
                 Select::make('type')
-                    ->options(['RECURRING' => 'R e c u r r i n g', 'ONE_TIME' => 'O n e  t i m e'])
+                    ->label('Jenis Biaya')
+                    ->options([
+                        'RECURRING' => 'Berulang (Bulanan/Semester)',
+                        'ONE_TIME' => 'Sekali Bayar',
+                    ])
                     ->default('RECURRING')
                     ->required(),
             ]);

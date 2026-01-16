@@ -27,6 +27,6 @@ class FeeStructure extends Model
     // Adjust if models are in specific subfolders like App\Models\Master
     public function prodi()
     {
-        return $this->belongsTo(Prodi::class);
+        return $this->belongsTo(Prodi::class, 'prodi_id', 'id_prodi');
     }
 }

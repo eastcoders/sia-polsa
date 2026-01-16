@@ -20,6 +20,7 @@ class FinancialInvoiceForm
         return $schema
             ->components([
                 Section::make('Informasi Tagihan')
+                    ->columnSpanFull()
                     ->description('Detail utama tagihan mahasiswa')
                     ->schema([
                         TextInput::make('invoice_number')
@@ -30,24 +31,27 @@ class FinancialInvoiceForm
 
                         Select::make('id_registrasi_mahasiswa')
                             ->label('Mahasiswa')
-                            ->relationship(
-                                name: 'riwayatPendidikan',
-                                modifyQueryUsing: fn(\Illuminate\Database\Eloquent\Builder $query) => $query->with(['mahasiswa']),
-                            )
-                            ->getOptionLabelFromRecordUsing(fn($record) => "{$record->mahasiswa?->nama_lengkap} - {$record->nim}")
                             ->searchable()
                             ->getSearchResultsUsing(function (string $search) {
                                 return \App\Models\RiwayatPendidikan::query()
                                     ->with('mahasiswa')
-                                    ->whereHas('mahasiswa', function ($query) use ($search) {
-                                        $query->where('nama_lengkap', 'like', "%{$search}%");
+                                    ->where(function ($query) use ($search) {
+                                        $query->whereHas('mahasiswa', function ($q) use ($search) {
+                                            $q->where('nama_lengkap', 'like', "%{$search}%");
+                                        })
+                                            ->orWhere('nim', 'like', "%{$search}%");
                                     })
-                                    ->orWhere('nim', 'like', "%{$search}%")
                                     ->limit(50)
                                     ->get()
                                     ->mapWithKeys(function ($record) {
                                         return [$record->id_registrasi_mahasiswa => "{$record->mahasiswa?->nama_lengkap} - {$record->nim}"];
                                     });
+                            })
+                            ->getOptionLabelUsing(function ($value) {
+                                $record = \App\Models\RiwayatPendidikan::with('mahasiswa')
+                                    ->where('id_registrasi_mahasiswa', $value)
+                                    ->first();
+                                return $record ? "{$record->mahasiswa?->nama_lengkap} - {$record->nim}" : null;
                             })
                             ->required()
                             ->disabledOn('edit')
@@ -80,6 +84,7 @@ class FinancialInvoiceForm
                             ->visible(fn(Get $get) => $get('status') === 'PAID'),
                     ])->columns(2),
                 Section::make('Rincian Biaya')
+                    ->columnSpanFull()
                     ->schema([
                         Repeater::make('items')
                             ->relationship('items')
@@ -106,6 +111,7 @@ class FinancialInvoiceForm
                     ]),
 
                 Section::make('Total')
+                    ->columnSpanFull()
                     ->schema([
                         TextInput::make('total_amount')
                             ->label('Total Tagihan')

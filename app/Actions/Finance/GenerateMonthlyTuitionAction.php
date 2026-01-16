@@ -8,12 +8,16 @@ use App\Enums\Finance\InvoiceStatus;
 use App\Enums\Finance\PaymentMethod;
 use App\Enums\Finance\PaymentSource;
 use App\Enums\Finance\ScholarshipStatus;
+use App\Models\Finance\FeeComponent;
+use App\Models\Finance\FeeStructure;
 use App\Models\Finance\FinancialInvoice;
+use App\Models\Finance\FinancialInvoiceItem;
 use App\Models\Finance\FinancialPayment;
 use App\Models\Finance\StudentScholarship;
 use App\Models\RiwayatPendidikan;
 use App\Models\User;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -45,7 +49,9 @@ class GenerateMonthlyTuitionAction
     private int $scholarshipInvoices = 0;
     private int $regularInvoices = 0;
     private int $duplicatesSkipped = 0;
+    private int $noFeeStructureSkipped = 0;
     private array $errors = [];
+    private ?string $currentBatchId = null;
 
     /**
      * Execute the billing generation for a specific month
@@ -59,9 +65,13 @@ class GenerateMonthlyTuitionAction
         $periodDate = $periodDate ?? Carbon::now()->startOfMonth();
         $periodDate = $periodDate->startOfMonth(); // Ensure it's always day 1
 
+        // Generate batch ID for this billing run (for rollback capability)
+        $this->currentBatchId = $dryRun ? null : (string) Str::uuid();
+
         Log::info('[BILLING ENGINE] Starting monthly tuition generation', [
             'period' => $periodDate->format('Y-m'),
             'dry_run' => $dryRun,
+            'batch_id' => $this->currentBatchId,
         ]);
 
         // Step 1: Fetch all active students
@@ -133,11 +143,23 @@ class GenerateMonthlyTuitionAction
             return;
         }
 
-        // Step 2B: Check for active scholarship
+        // Step 2B: Get fee breakdown from FeeStructure
+        $feeItems = $this->getFeeBreakdown($student);
+
+        // Skip if no fee structure found for this student
+        if ($feeItems->isEmpty()) {
+            $this->noFeeStructureSkipped++;
+            Log::debug('[BILLING ENGINE] Skipping student without fee structure', [
+                'student_id' => $studentId,
+            ]);
+            return;
+        }
+
+        // Step 2C: Check for active scholarship
         $activeScholarship = $this->getActiveScholarshipForDate($studentId, $periodDate);
 
         // Step 3: Calculate tuition amount
-        $tuitionAmount = $this->calculateTuitionAmount($student);
+        $tuitionAmount = $feeItems->sum('amount');
 
         if ($dryRun) {
             // Just count, don't create
@@ -151,9 +173,9 @@ class GenerateMonthlyTuitionAction
         }
 
         // Step 4: Generate invoice and handle scholarship payment
-        DB::transaction(function () use ($studentId, $periodDate, $tuitionAmount, $activeScholarship) {
+        DB::transaction(function () use ($studentId, $periodDate, $tuitionAmount, $feeItems, $activeScholarship) {
             // Create the invoice (always UNPAID initially)
-            $invoice = $this->createInvoice($studentId, $periodDate, $tuitionAmount);
+            $invoice = $this->createInvoice($studentId, $periodDate, $tuitionAmount, $feeItems);
             $this->invoicesCreated++;
 
             // Step 5: If scholarship is active, create auto-payment
@@ -211,37 +233,76 @@ class GenerateMonthlyTuitionAction
     }
 
     /**
-     * Calculate tuition amount for a student
+     * Get fee breakdown for a student from FeeStructure
+     * Returns collection of fee components with amounts
+     * 
+     * @param RiwayatPendidikan $student
+     * @return Collection [['component_name' => string, 'amount' => float], ...]
+     */
+    private function getFeeBreakdown(RiwayatPendidikan $student): Collection
+    {
+        // Load required relationships
+        $student->loadMissing(['periodeDaftar', 'prodi']);
+
+        // Extract angkatan from periode masuk (tahun ajaran)
+        $angkatan = $student->periodeDaftar?->id_tahun_ajaran;
+        $prodiId = $student->id_prodi;
+        $waktuKuliah = strtolower($student->waktu_kuliah ?? 'pagi');
+
+        if (!$angkatan || !$prodiId) {
+            Log::warning('[BILLING ENGINE] Missing angkatan or prodi for student', [
+                'student_id' => $student->id_registrasi_mahasiswa,
+                'angkatan' => $angkatan,
+                'prodi_id' => $prodiId,
+            ]);
+            return collect();
+        }
+
+        // Get fee structures with RECURRING components only
+        $feeStructures = FeeStructure::query()
+            ->where('angkatan', $angkatan)
+            ->where('prodi_id', $prodiId)
+            ->where('waktu_kuliah_enum', $waktuKuliah)
+            ->whereHas('component', function ($query) {
+                $query->where('type', 'RECURRING');
+            })
+            ->with('component')
+            ->get();
+
+        return $feeStructures->map(function ($structure) {
+            return [
+                'component_name' => $structure->component->name,
+                'amount' => (float) $structure->amount,
+            ];
+        });
+    }
+
+    /**
+     * Calculate total tuition amount for a student
      * 
      * @param RiwayatPendidikan $student
      * @return float
      */
     private function calculateTuitionAmount(RiwayatPendidikan $student): float
     {
-        // TODO: Implement proper fee calculation based on:
-        // - student_fee_assignments
-        // - fee_structures
-        // - angkatan, prodi, waktu_kuliah
-
-        // For now, return a placeholder amount
-        // This should be replaced with actual fee lookup logic
-        return 3000000.00; // Rp 3.000.000 default
+        return $this->getFeeBreakdown($student)->sum('amount');
     }
 
     /**
-     * Create a new invoice for a student
+     * Create a new invoice for a student with line items
      * 
      * @param string $studentId
      * @param Carbon $periodDate
      * @param float $amount
+     * @param Collection $feeItems Fee breakdown items
      * @return FinancialInvoice
      */
-    private function createInvoice(string $studentId, Carbon $periodDate, float $amount): FinancialInvoice
+    private function createInvoice(string $studentId, Carbon $periodDate, float $amount, Collection $feeItems): FinancialInvoice
     {
         $invoiceNumber = $this->generateInvoiceNumber($periodDate);
         $dueDate = $periodDate->copy()->addDays(self::DUE_DATE_OFFSET_DAYS);
 
-        return FinancialInvoice::create([
+        $invoice = FinancialInvoice::create([
             'invoice_number' => $invoiceNumber,
             'id_registrasi_mahasiswa' => $studentId,
             'period_date' => $periodDate,
@@ -251,7 +312,19 @@ class GenerateMonthlyTuitionAction
             'payment_source' => null, // Will be set when paid
             'scholarship_coverage_id' => null, // Will be set if scholarship covers
             'generated_at' => now(),
+            'batch_id' => $this->currentBatchId,
         ]);
+
+        // Create invoice line items
+        foreach ($feeItems as $item) {
+            FinancialInvoiceItem::create([
+                'financial_invoice_id' => $invoice->id,
+                'component_name' => $item['component_name'],
+                'amount' => $item['amount'],
+            ]);
+        }
+
+        return $invoice;
     }
 
     /**
@@ -361,11 +434,13 @@ class GenerateMonthlyTuitionAction
     {
         return [
             'period' => $periodDate->format('Y-m'),
+            'batch_id' => $this->currentBatchId,
             'total_students_processed' => $this->totalStudentsProcessed,
             'invoices_created' => $this->invoicesCreated,
             'scholarship_invoices' => $this->scholarshipInvoices,
             'regular_invoices' => $this->regularInvoices,
             'duplicates_skipped' => $this->duplicatesSkipped,
+            'no_fee_structure_skipped' => $this->noFeeStructureSkipped,
             'errors_count' => count($this->errors),
             'errors' => $this->errors,
         ];
@@ -381,6 +456,39 @@ class GenerateMonthlyTuitionAction
         $this->scholarshipInvoices = 0;
         $this->regularInvoices = 0;
         $this->duplicatesSkipped = 0;
+        $this->noFeeStructureSkipped = 0;
         $this->errors = [];
+        $this->currentBatchId = null;
+    }
+
+    /**
+     * Rollback all invoices from a specific batch
+     * Use this to undo a bulk billing operation
+     * 
+     * @param string $batchId
+     * @return int Number of invoices deleted
+     */
+    public static function rollbackBatch(string $batchId): int
+    {
+        $invoices = FinancialInvoice::where('batch_id', $batchId)->get();
+        $count = $invoices->count();
+
+        DB::transaction(function () use ($invoices) {
+            foreach ($invoices as $invoice) {
+                // Delete related items first
+                $invoice->items()->delete();
+                // Delete related payments
+                $invoice->payments()->detach();
+                // Delete invoice
+                $invoice->delete();
+            }
+        });
+
+        Log::info('[BILLING ENGINE] Rolled back batch', [
+            'batch_id' => $batchId,
+            'invoices_deleted' => $count,
+        ]);
+
+        return $count;
     }
 }

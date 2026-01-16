@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Finance\FeeStructures\Pages;
 
+use App\Filament\Resources\Finance\FeeStructures\Actions\GenerateBulkInvoicesAction;
 use App\Filament\Resources\Finance\FeeStructures\FeeStructureResource;
 use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
@@ -13,7 +14,9 @@ class ListFeeStructures extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+            GenerateBulkInvoicesAction::make(),
             CreateAction::make(),
         ];
     }
 }
+

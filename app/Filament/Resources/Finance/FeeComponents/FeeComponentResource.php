@@ -48,8 +48,6 @@ class FeeComponentResource extends Resource
     {
         return [
             'index' => ListFeeComponents::route('/'),
-            'create' => CreateFeeComponent::route('/create'),
-            'edit' => EditFeeComponent::route('/{record}/edit'),
         ];
     }
 }

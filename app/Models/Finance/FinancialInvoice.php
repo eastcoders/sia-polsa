@@ -29,6 +29,7 @@ class FinancialInvoice extends Model
         'scholarship_coverage_id',
         'paid_at',
         'generated_at',
+        'batch_id',
     ];
 
     protected $casts = [

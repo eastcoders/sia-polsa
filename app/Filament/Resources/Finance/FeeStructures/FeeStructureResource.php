@@ -46,8 +46,8 @@ class FeeStructureResource extends Resource
     {
         return [
             'index' => ListFeeStructures::route('/'),
-            'create' => CreateFeeStructure::route('/create'),
-            'edit' => EditFeeStructure::route('/{record}/edit'),
+            // 'create' => CreateFeeStructure::route('/create'),
+            // 'edit' => EditFeeStructure::route('/{record}/edit'),
         ];
     }
 }

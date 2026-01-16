@@ -18,6 +18,7 @@ class FeeStructureForm
                     ->searchable()
                     ->required(),
                 Select::make('prodi_id')
+                    ->label('Program Studi')
                     ->relationship('prodi', 'nama_program_studi')
                     ->required(),
                 Select::make('waktu_kuliah_enum')
