@@ -43,7 +43,7 @@ class BiodataMahasiswasTable
                         'danger' => 'failed',
                         'gray' => 'server_deleted',
                     ])
-                    ->tooltip(fn ($record) => $record->sync_message),
+                    ->tooltip(fn($record) => $record->sync_message),
                 TextColumn::make('id')
                     ->label('No.')
                     ->rowIndex(),
@@ -84,7 +84,7 @@ class BiodataMahasiswasTable
                             ->toArray()
                     )
                     ->query(function (Builder $query, array $data): Builder {
-                        if (! empty($data['values'])) {
+                        if (!empty($data['values'])) {
                             $query->whereHas('riwayatPendidikan', function (Builder $q) use ($data) {
                                 $q->whereIn('id_prodi', $data['values']);
                             });
@@ -101,7 +101,7 @@ class BiodataMahasiswasTable
                             ->pluck('nama_semester', 'id_semester')
                             ->toArray();
                     })
-                    ->default(fn () => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', '1')->value('id_semester'))
+                    ->default(fn() => session('active_semester_id') ?? \App\Models\Semester::where('a_periode_aktif', '1')->value('id_semester'))
                     ->preload()
                     ->searchable()
                     ->query(function (Builder $query, array $data) {
@@ -144,20 +144,24 @@ class BiodataMahasiswasTable
                         TextInput::make('email')
                             ->email()
                             ->required()
-                            ->default(fn (BiodataMahasiswa $record) => $record->email)
+                            ->default(fn(BiodataMahasiswa $record) => $record->email)
                             ->label('Email Login'),
                         TextInput::make('password')
                             ->password()
                             ->required()
+                            ->revealable()
                             ->confirmed()
                             ->label('Password'),
                         TextInput::make('password_confirmation')
                             ->password()
+                            ->revealable()
                             ->required()
                             ->label('Konfirmasi Password'),
                     ])
                     ->action(function (BiodataMahasiswa $record, array $data) {
-                        if (! $record->riwayatPendidikan?->nim) {
+                        $riwayat = $record->riwayatPendidikan->first();
+
+                        if (!$riwayat?->nim) {
                             \Filament\Notifications\Notification::make()
                                 ->title('Gagal')
                                 ->body('Mahasiswa tidak memiliki NIM, tidak bisa dijadikan Username.')
@@ -178,7 +182,7 @@ class BiodataMahasiswasTable
                             return;
                         }
 
-                        if (\App\Models\User::where('username', $record->riwayatPendidikan->nim)->exists()) {
+                        if (\App\Models\User::where('username', $riwayat->nim)->exists()) {
                             \Filament\Notifications\Notification::make()
                                 ->title('Gagal')
                                 ->body('NIM (Username) sudah digunakan oleh user lain.')
@@ -191,7 +195,7 @@ class BiodataMahasiswasTable
                         $user = \App\Models\User::create([
                             'name' => $record->nama_lengkap,
                             'email' => $data['email'],
-                            'username' => $record->riwayatPendidikan->nim,
+                            'username' => $riwayat->nim,
                             'password' => \Illuminate\Support\Facades\Hash::make($data['password']),
                             'mahasiswa_id' => $record->id,
                         ]);
@@ -200,16 +204,16 @@ class BiodataMahasiswasTable
 
                         \Filament\Notifications\Notification::make()
                             ->title('Sukses')
-                            ->body('Akun user berhasil dibuat with Username: '.$record->riwayatPendidikan->nim)
+                            ->body('Akun user berhasil dibuat with Username: ' . $riwayat->nim)
                             ->success()
                             ->send();
                     })
-                    ->visible(fn (BiodataMahasiswa $record) => $record->user === null),
+                    ->visible(fn(BiodataMahasiswa $record) => $record->user === null),
             ], position: RecordActionsPosition::BeforeColumns)
             ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()
-                        ->before(fn ($record) => $record?->riwayatPendidikan()?->delete()),
+                        ->before(fn($record) => $record?->riwayatPendidikan()?->delete()),
                     BulkAction::make('push_selected')
                         ->label('Push Selected to Server')
                         ->icon('heroicon-o-cloud-arrow-up')

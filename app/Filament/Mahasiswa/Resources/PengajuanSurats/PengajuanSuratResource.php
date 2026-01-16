@@ -26,11 +26,10 @@ class PengajuanSuratResource extends Resource
 {
     protected static ?string $model = PengajuanSurat::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-paper-airplane';
-
     protected static string|\UnitEnum|null $navigationGroup = 'Layanan Akademik';
 
     protected static ?string $navigationLabel = 'Pengajuan Surat';
+
 
     public static function form(Schema $schema): Schema
     {

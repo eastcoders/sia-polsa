@@ -45,6 +45,24 @@ class RiwayatPendidikan extends Model
     }
 
     /**
+     * Get all AktivitasKuliahMahasiswa records for this student.
+     * Contains semester-wise status (A=Aktif, C=Cuti, N=Non-Aktif, L=Lulus, D=DO)
+     */
+    public function aktivitasKuliahMahasiswa()
+    {
+        return $this->hasMany(AktivitasKuliahMahasiswa::class, 'id_registrasi_mahasiswa', 'id_registrasi_mahasiswa');
+    }
+
+    /**
+     * Get the latest AktivitasKuliahMahasiswa (most recent semester status)
+     */
+    public function latestAktivitasKuliah()
+    {
+        return $this->hasOne(AktivitasKuliahMahasiswa::class, 'id_registrasi_mahasiswa', 'id_registrasi_mahasiswa')
+            ->latestOfMany('id_semester');
+    }
+
+    /**
      * Get the student's shift (Pagi/Sore) based on NIM.
      * Logic: Character at index 4 of NIM (1 = Pagi, 2 = Sore).
      */

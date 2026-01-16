@@ -84,7 +84,7 @@ return new class extends Migration {
             Schema::create('financial_payments', function (Blueprint $table) {
                 $table->uuid('id')->primary();
                 $table->string('payment_number')->unique();
-                $table->enum('payment_method', ['MANUAL_TRANSFER', 'VIRTUAL_ACCOUNT', 'CASH']);
+                $table->enum('payment_method', ['MANUAL_TRANSFER', 'VIRTUAL_ACCOUNT', 'CASH', 'SCHOLARSHIP', 'WAIVER']);
                 $table->string('proof_file_path')->nullable(); // For manual
                 $table->string('proof_file_hash')->nullable()->index(); // Duplicate detection
                 $table->enum('status', ['PENDING', 'VERIFIED', 'REJECTED'])->default('PENDING');

@@ -19,7 +19,7 @@ class FinancialInvoicesTable
                     ->searchable()
                     ->sortable(),
 
-                TextColumn::make('id_registrasi_mahasiswa')
+                TextColumn::make('riwayatPendidikan.mahasiswa.nama_lengkap')
                     ->label('Mahasiswa')
                     ->searchable(),
 
@@ -42,7 +42,7 @@ class FinancialInvoicesTable
                 TextColumn::make('status')
                     ->label('Status')
                     ->badge()
-                    ->color(fn(string $state): string => match ($state) {
+                    ->color(fn($state) => match ($state) {
                         'UNPAID' => 'danger',
                         'PAID' => 'success',
                         default => 'gray',

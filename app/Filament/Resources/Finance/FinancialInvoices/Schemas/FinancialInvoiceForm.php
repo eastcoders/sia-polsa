@@ -28,10 +28,30 @@ class FinancialInvoiceForm
                             ->required()
                             ->readOnly(), // Auto-generated usually
 
-                        TextInput::make('id_registrasi_mahasiswa')
-                            ->label('ID Registrasi Mahasiswa')
+                        Select::make('id_registrasi_mahasiswa')
+                            ->label('Mahasiswa')
+                            ->relationship(
+                                name: 'riwayatPendidikan',
+                                modifyQueryUsing: fn(\Illuminate\Database\Eloquent\Builder $query) => $query->with(['mahasiswa']),
+                            )
+                            ->getOptionLabelFromRecordUsing(fn($record) => "{$record->mahasiswa?->nama_lengkap} - {$record->nim}")
+                            ->searchable()
+                            ->getSearchResultsUsing(function (string $search) {
+                                return \App\Models\RiwayatPendidikan::query()
+                                    ->with('mahasiswa')
+                                    ->whereHas('mahasiswa', function ($query) use ($search) {
+                                        $query->where('nama_lengkap', 'like', "%{$search}%");
+                                    })
+                                    ->orWhere('nim', 'like', "%{$search}%")
+                                    ->limit(50)
+                                    ->get()
+                                    ->mapWithKeys(function ($record) {
+                                        return [$record->id_registrasi_mahasiswa => "{$record->mahasiswa?->nama_lengkap} - {$record->nim}"];
+                                    });
+                            })
                             ->required()
-                            ->placeholder('Masukkan ID Registrasi'), // In future, use Select with search
+                            ->disabledOn('edit')
+                            ->placeholder('Cari Nama Mahasiswa...'),
                         Grid::make(2)
                             ->schema([
                                 DatePicker::make('period_date')
@@ -50,10 +70,6 @@ class FinancialInvoiceForm
                             ->options([
                                 'UNPAID' => 'Belum Lunas',
                                 'PAID' => 'Lunas',
-                            ])
-                            ->colors([
-                                'danger' => 'UNPAID',
-                                'success' => 'PAID',
                             ])
                             ->default('UNPAID')
                             ->required()

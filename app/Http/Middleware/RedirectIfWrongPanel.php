@@ -23,7 +23,7 @@ class RedirectIfWrongPanel
         $user = auth()->user();
 
         // If not logged in, let standard authentication handle it
-        if (! $user) {
+        if (!$user) {
             return $next($request);
         }
 
@@ -31,7 +31,12 @@ class RedirectIfWrongPanel
 
         // Admin Panel Logic
         if ($panelId === 'admin') {
-            if (! $user->hasRole('admin')) {
+            if (!$user->hasRole('admin')) {
+
+                if ($user->hasRole('pegawai')) {
+                    return redirect()->to('/pegawai');
+                }
+
                 if ($user->hasRole('dosen')) {
                     return redirect()->to('/dosen');
                 }
@@ -48,7 +53,11 @@ class RedirectIfWrongPanel
 
         // Dosen Panel Logic
         if ($panelId === 'dosen') {
-            if (! $user->hasRole('dosen')) {
+            if (!$user->hasRole('dosen')) {
+                if ($user->hasRole('pegawai')) {
+                    return redirect()->to('/pegawai');
+                }
+
                 if ($user->hasRole('admin')) {
                     return redirect()->to('/admin');
                 }
@@ -64,7 +73,10 @@ class RedirectIfWrongPanel
         }
 
         if ($panelId === 'mahasiswa') {
-            if (! $user->hasRole('mahasiswa')) {
+            if (!$user->hasRole('mahasiswa')) {
+                if ($user->hasRole('pegawai')) {
+                    return redirect()->to('/pegawai');
+                }
 
                 if ($user->hasRole('admin')) {
                     return redirect()->to('/admin');
@@ -77,6 +89,26 @@ class RedirectIfWrongPanel
                 Filament::auth()->logout();
 
                 return redirect()->to('/mahasiswa/login');
+            }
+        }
+
+        if ($panelId === 'pegawai') {
+            if (!$user->hasRole('pegawai')) {
+                if ($user->hasRole('admin')) {
+                    return redirect()->to('/admin');
+                }
+
+                if ($user->hasRole('dosen')) {
+                    return redirect()->to('/dosen');
+                }
+
+                if ($user->hasRole('mahasiswa')) {
+                    return redirect()->to('/mahasiswa');
+                }
+
+                Filament::auth()->logout();
+
+                return redirect()->to('/pegawai/login');
             }
         }
 

@@ -77,7 +77,7 @@ class AktivitasKuliahMahasiswaResource extends Resource
                     ->required()
                     ->native(false)
                     ->options(Semester::where('a_periode_aktif', '1')->orderBy('id_semester', 'desc')->pluck('nama_semester', 'id_semester'))
-                    ->default(fn () => session('active_semester_id') ?? Semester::where('a_periode_aktif', '1')->value('id_semester')),
+                    ->default(fn() => session('active_semester_id') ?? Semester::where('a_periode_aktif', '1')->value('id_semester')),
                 Forms\Components\Select::make('id_status_mahasiswa')
                     ->label('Status Mahasiswa')
                     ->required()
@@ -143,16 +143,16 @@ class AktivitasKuliahMahasiswaResource extends Resource
                 TextColumn::make('id_server')
                     ->label('Sync Status')
                     ->badge()
-                    ->formatStateUsing(fn ($state) => $state ? 'Synced' : 'Pending')
+                    ->formatStateUsing(fn($state) => $state ? 'Synced' : 'Pending')
                     ->colors([
-                        'success' => fn ($state) => $state !== null,
-                        'warning' => fn ($state) => $state === null,
+                        'success' => fn($state) => $state !== null,
+                        'warning' => fn($state) => $state === null,
                     ]),
             ])
             ->filters([
                 SelectFilter::make('id_semester')
                     ->label('Semester')
-                    ->options(fn () => Semester::orderBy('id_semester', 'desc')->take(10)->pluck('nama_semester', 'id_semester')->toArray()),
+                    ->options(fn() => Semester::orderBy('id_semester', 'desc')->take(10)->pluck('nama_semester', 'id_semester')->toArray()),
                 SelectFilter::make('id_status_mahasiswa')
                     ->label('Status')
                     ->options([
@@ -163,6 +163,35 @@ class AktivitasKuliahMahasiswaResource extends Resource
                     ]),
             ])
             ->actions([
+                Action::make('recalculate')
+                    ->label('Hitung Ulang')
+                    ->icon('heroicon-o-calculator')
+                    ->color('info')
+                    ->requiresConfirmation()
+                    ->modalHeading('Hitung Ulang IPS/IPK')
+                    ->modalDescription('Ini akan menghitung ulang IPS, IPK, dan SKS untuk mahasiswa ini dari Semester 1 hingga sekarang.')
+                    ->action(function (AktivitasKuliahMahasiswa $record) {
+                        try {
+                            $action = app(\App\Actions\Academic\CalculateStudentGpaAction::class);
+                            $result = $action->execute($record->id_registrasi_mahasiswa);
+
+                            if ($result['success']) {
+                                Notification::make()
+                                    ->title('Kalkulasi Selesai')
+                                    ->body("IPK: {$result['final_ipk']}, Total SKS: {$result['total_sks']}")
+                                    ->success()
+                                    ->send();
+                            } else {
+                                throw new \Exception($result['error'] ?? 'Unknown error');
+                            }
+                        } catch (\Exception $e) {
+                            Notification::make()
+                                ->title('Gagal Menghitung')
+                                ->body($e->getMessage())
+                                ->danger()
+                                ->send();
+                        }
+                    }),
                 Action::make('sync')
                     ->label('Sync')
                     ->icon('heroicon-o-arrow-path')

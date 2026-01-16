@@ -51,6 +51,7 @@ class DosenPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
+            ->databaseNotifications()
             ->viteTheme('resources/css/filament/dosen/theme.css')
             ->authMiddleware([
                 \App\Http\Middleware\RedirectIfWrongPanel::class,

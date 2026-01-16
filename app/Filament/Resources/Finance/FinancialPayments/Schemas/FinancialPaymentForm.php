@@ -18,15 +18,15 @@ class FinancialPaymentForm
                     ->required(),
                 Select::make('payment_method')
                     ->options([
-            'MANUAL_TRANSFER' => 'M a n u a l  t r a n s f e r',
-            'VIRTUAL_ACCOUNT' => 'V i r t u a l  a c c o u n t',
-            'CASH' => 'C a s h',
-        ])
+                        'MANUAL_TRANSFER' => 'Manual transfer',
+                        'VIRTUAL_ACCOUNT' => 'Virtual  account',
+                        'CASH' => 'Cash',
+                    ])
                     ->required(),
                 TextInput::make('proof_file_path'),
                 TextInput::make('proof_file_hash'),
                 Select::make('status')
-                    ->options(['PENDING' => 'P e n d i n g', 'VERIFIED' => 'V e r i f i e d', 'REJECTED' => 'R e j e c t e d'])
+                    ->options(['PENDING' => 'Pending', 'VERIFIED' => 'Verified', 'REJECTED' => 'Rejected'])
                     ->default('PENDING')
                     ->required(),
                 DateTimePicker::make('verified_at'),

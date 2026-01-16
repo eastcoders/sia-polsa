@@ -2,9 +2,10 @@
 
 namespace App\Filament\Resources\Finance\FeeStructures\Schemas;
 
+use App\Models\Semester;
+use Filament\Schemas\Schema;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Schema;
 
 class FeeStructureForm
 {
@@ -12,15 +13,22 @@ class FeeStructureForm
     {
         return $schema
             ->components([
-                TextInput::make('angkatan')
+                Select::make('angkatan')
+                    ->options(fn() => Semester::orderBy('id_tahun_ajaran', 'desc')->pluck('id_tahun_ajaran', 'id_tahun_ajaran'))
+                    ->searchable()
                     ->required(),
-                TextInput::make('prodi_id'),
+                Select::make('prodi_id')
+                    ->relationship('prodi', 'nama_program_studi')
+                    ->required(),
                 Select::make('waktu_kuliah_enum')
-                    ->options(['pagi' => 'Pagi', 'sore' => 'Sore']),
-                TextInput::make('fee_component_id')
-                    ->required()
-                    ->numeric(),
+                    ->options(['pagi' => 'Pagi', 'sore' => 'Sore'])
+                    ->required(),
+                Select::make('fee_component_id')
+                    ->relationship('component', 'name')
+                    ->required(),
                 TextInput::make('amount')
+                    ->label('Jumlah')
+                    ->prefix('Rp.')
                     ->required()
                     ->numeric(),
             ]);

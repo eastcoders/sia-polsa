@@ -10,6 +10,7 @@ class KalenderAkademik extends Model
         'tanggal_mulai',
         'tanggal_selesai',
         'keterangan',
+        'jenis_kegiatan',  // Added for Auto-Switch Logic
         'is_libur',
         'is_minggu_ujian',
         'id_semester',
@@ -37,5 +38,22 @@ class KalenderAkademik extends Model
     public function scopeExamWeeks($query)
     {
         return $query->where('is_minggu_ujian', true);
+    }
+
+    /**
+     * Scope for filtering by jenis_kegiatan.
+     * Values: MINGGU_UTS, MINGGU_UAS, PERKULIAHAN, LIBUR_SEMESTER, etc.
+     */
+    public function scopeJenisKegiatan($query, string $type)
+    {
+        return $query->where('jenis_kegiatan', $type);
+    }
+
+    /**
+     * Get Semester relationship.
+     */
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class, 'id_semester', 'id_semester');
     }
 }

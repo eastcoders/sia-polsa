@@ -27,6 +27,11 @@ class AccKhsResource extends Resource
 
     protected static ?string $navigationLabel = 'ACC KHS Mahasiswa';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->hasRole('kaprodi') ?? false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([

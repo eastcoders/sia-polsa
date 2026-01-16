@@ -64,6 +64,7 @@ class AdminPanelProvider extends PanelProvider
                 // FilamentAwinTheme::make()
                 //     ->primaryColor(Color::Emerald),
             ])
+            ->databaseNotifications()
             ->navigationGroups([
                 NavigationGroup::make()
                     ->label('Dosen & Pegawai')

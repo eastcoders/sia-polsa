@@ -15,13 +15,12 @@ class FeeStructuresTable
         return $table
             ->columns([
                 TextColumn::make('angkatan'),
-                TextColumn::make('prodi_id')
+                TextColumn::make('prodi.nama_program_studi')
                     ->searchable(),
                 TextColumn::make('waktu_kuliah_enum')
                     ->badge(),
-                TextColumn::make('fee_component_id')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('component.name')
+                    ->label('Komponen Biaya'),
                 TextColumn::make('amount')
                     ->numeric()
                     ->sortable(),

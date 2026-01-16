@@ -10,6 +10,8 @@ use Filament\Schemas\Schema;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Facades\Auth;
+use App\Services\ExamPeriodService;
+use UnitEnum;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Illuminate\Database\Eloquent\Builder;
@@ -19,11 +21,13 @@ class KartuUjianResource extends Resource
 {
     protected static ?string $model = JadwalUjian::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-identification';
+    protected static string|BackedEnum|null $navigationIcon = null;
     protected static ?string $navigationLabel = 'Kartu Ujian';
+    protected static UnitEnum|string|null $navigationGroup = 'Perkuliahan';
     protected static ?string $slug = 'kartu-ujian';
 
-    // Disable creation/edit/delete for students
+    protected static ?int $navigationSort = 2;
+
     public static function canCreate(): bool
     {
         return false;
@@ -47,6 +51,7 @@ class KartuUjianResource extends Resource
         }
 
         return parent::getEloquentQuery()
+            ->forActiveExamPeriod()  // Auto-Switch Logic: filter by active exam period
             ->whereHas('kelasKuliah', function (Builder $query) use ($user) {
                 $query->whereHas('pesertaKelas', function (Builder $q) use ($user) {
                     $q->whereHas('riwayatPendidikan', function (Builder $rq) use ($user) {
@@ -64,18 +69,29 @@ class KartuUjianResource extends Resource
             ->count();
     }
 
+    /**
+     * Get exam period status for display in header.
+     */
+    public static function getExamPeriodStatus(): array
+    {
+        return ExamPeriodService::getExamPeriodStatus();
+    }
+
     public static function table(Table $table): Table
     {
         $pendingSurveys = self::checkGatekeeper();
 
         return $table
             ->columns([
+                TextColumn::make('id')
+                    ->rowIndex()
+                    ->label('No.'),
                 TextColumn::make('kelasKuliah.matkul.kode_mata_kuliah')
                     ->label('Kode')
                     ->sortable(),
-                TextColumn::make('kelasKuliah.matkul.nama_resmi')
+                TextColumn::make('kelasKuliah.matkul.nama_mata_kuliah')
                     ->label('Mata Kuliah')
-                    ->description(fn(JadwalUjian $record) => $record->kelasKuliah->nama_kelas)
+                    ->description(fn(JadwalUjian $record) => $record->kelasKuliah->nama_kelas_kuliah)
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('jenis_ujian')
@@ -101,28 +117,9 @@ class KartuUjianResource extends Resource
                     })
                     ->description(
                         fn(JadwalUjian $record) => $record->mode_ujian === 'ONSITE'
-                        ? 'Ruang: ' . ($record->ruangKelas->nama_ruang ?? '-')
+                        ? 'Ruang: ' . ($record->ruangKelas->nama_ruang_kelas ?? '-')
                         : 'Link ada di detail'
                     ),
-            ])
-            ->actions([
-                \Filament\Tables\Actions\Action::make('cetak')
-                    ->label('Cetak Kartu')
-                    ->icon('heroicon-o-printer')
-                    ->button()
-                    ->outlined()
-                    ->url('#') // Placeholder route
-                    ->openUrlInNewTab()
-                    ->visible($pendingSurveys === 0)
-                    ->tooltip('Anda dapat mencetak kartu ujian setelah semua kuesioner terisi.'),
-
-                \Filament\Tables\Actions\Action::make('blocked')
-                    ->label('Kuesioner Belum Lengkap')
-                    ->icon('heroicon-o-lock-closed')
-                    ->color('danger')
-                    ->button()
-                    ->url('/mahasiswa/isi-kuesioner')
-                    ->visible($pendingSurveys > 0),
             ])
             ->emptyStateHeading('Belum ada jadwal ujian')
             ->emptyStateDescription('Jika ujian sudah dekat, hubungi bagian akademik.');

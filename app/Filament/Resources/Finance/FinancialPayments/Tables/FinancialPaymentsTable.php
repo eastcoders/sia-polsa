@@ -15,24 +15,21 @@ class FinancialPaymentsTable
         return $table
             ->columns([
                 TextColumn::make('id')
-                    ->label('ID')
-                    ->searchable(),
+                    ->label('No. ')
+                    ->rowIndex(),
+                TextColumn::make('invoices.riwayatPendidikan.mahasiswa.nama_lengkap')
+                    ->label('Nama Mahasiswa'),
                 TextColumn::make('payment_number')
                     ->searchable(),
                 TextColumn::make('payment_method')
                     ->badge(),
-                TextColumn::make('proof_file_path')
-                    ->searchable(),
-                TextColumn::make('proof_file_hash')
-                    ->searchable(),
                 TextColumn::make('status')
                     ->badge(),
                 TextColumn::make('verified_at')
                     ->dateTime()
                     ->sortable(),
-                TextColumn::make('verified_by')
-                    ->numeric()
-                    ->sortable(),
+                TextColumn::make('verifier.name')
+                    ->label('Diverifikasi Oleh'),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

@@ -5,5 +5,6 @@ return [
     App\Providers\Filament\AdminPanelProvider::class,
     App\Providers\Filament\DosenPanelProvider::class,
     App\Providers\Filament\MahasiswaPanelProvider::class,
+    App\Providers\Filament\PegawaiPanelProvider::class,
     App\Providers\TelescopeServiceProvider::class,
 ];

@@ -26,6 +26,11 @@ class ApprovalSuratResource extends Resource
 
     protected static ?string $navigationLabel = 'Approval Surat';
 
+    public static function shouldRegisterNavigation(): bool
+    {
+        return auth()->user()?->hasRole('kaprodi') ?? false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([

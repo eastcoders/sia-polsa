@@ -36,6 +36,18 @@ class KalenderAkademikResource extends Resource
                     ->required(),
                 TextInput::make('keterangan')
                     ->required(),
+                \Filament\Forms\Components\Select::make('jenis_kegiatan')
+                    ->label('Jenis Kegiatan')
+                    ->options([
+                        'MINGGU_UTS' => 'Minggu UTS',
+                        'MINGGU_UAS' => 'Minggu UAS',
+                        'PERKULIAHAN' => 'Perkuliahan',
+                        'LIBUR_SEMESTER' => 'Libur Semester',
+                        'LIBUR_NASIONAL' => 'Libur Nasional',
+                        'KEGIATAN_AKADEMIK' => 'Kegiatan Akademik',
+                    ])
+                    ->native(false)
+                    ->searchable(),
                 \Filament\Forms\Components\Select::make('id_semester')
                     ->label('Semester')
                     ->searchable()
@@ -60,11 +72,30 @@ class KalenderAkademikResource extends Resource
                     ->sortable(),
                 TextColumn::make('keterangan')
                     ->searchable(),
+                TextColumn::make('jenis_kegiatan')
+                    ->badge()
+                    ->color(fn(?string $state): string => match ($state) {
+                        'MINGGU_UTS' => 'info',
+                        'MINGGU_UAS' => 'warning',
+                        'PERKULIAHAN' => 'success',
+                        'LIBUR_SEMESTER', 'LIBUR_NASIONAL' => 'danger',
+                        default => 'gray',
+                    })
+                    ->formatStateUsing(fn(?string $state): string => match ($state) {
+                        'MINGGU_UTS' => 'Minggu UTS',
+                        'MINGGU_UAS' => 'Minggu UAS',
+                        'PERKULIAHAN' => 'Perkuliahan',
+                        'LIBUR_SEMESTER' => 'Libur Semester',
+                        'LIBUR_NASIONAL' => 'Libur Nasional',
+                        'KEGIATAN_AKADEMIK' => 'Kegiatan Akademik',
+                        default => $state ?? '-',
+                    }),
                 IconColumn::make('is_libur')
                     ->boolean(),
                 IconColumn::make('is_minggu_ujian')
                     ->boolean(),
-                TextColumn::make('id_semester')
+                TextColumn::make('semester.nama_semester')
+                    ->label('Semester')
                     ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
