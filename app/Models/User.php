@@ -81,6 +81,10 @@ class User extends Authenticatable implements FilamentUser
             return $this->hasRole('mahasiswa');
         }
 
+        if ($panel->getId() === 'pegawai') {
+            return $this->hasRole('kepegawaian');
+        }
+
         return false;
     }
 }

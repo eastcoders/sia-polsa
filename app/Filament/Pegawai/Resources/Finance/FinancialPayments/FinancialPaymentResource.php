@@ -1,15 +1,14 @@
 <?php
 
-namespace App\Filament\Dosen\Resources\Finance\FinancialPayments;
+namespace App\Filament\Pegawai\Resources\Finance\FinancialPayments;
 
-use App\Filament\Dosen\Resources\Finance\FinancialPayments\Pages;
+use App\Filament\Pegawai\Resources\Finance\FinancialPayments\Pages;
 use App\Filament\Resources\Finance\FinancialPayments\Schemas\FinancialPaymentForm;
 use App\Filament\Resources\Finance\FinancialPayments\Tables\FinancialPaymentsTable;
 use App\Models\Finance\FinancialPayment;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Table;
-use Filament\Support\Icons\Heroicon;
 use UnitEnum;
 
 class FinancialPaymentResource extends Resource
