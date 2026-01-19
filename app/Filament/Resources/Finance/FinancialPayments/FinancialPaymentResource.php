@@ -27,6 +27,16 @@ class FinancialPaymentResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'payment_number';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::where('status', 'PENDING')->count() ?: null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return FinancialPaymentForm::configure($schema);

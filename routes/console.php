@@ -53,3 +53,13 @@ Schedule::command('academic:recalculate-akm --dirty')
     ->appendOutputTo(storage_path('logs/akm-recalculation.log'))
     ->name('akm-nightly-recalculation');
 
+// Finance: Send invoice due date reminders daily at 08:00
+// Notifies students about invoices due in 7, 3, 1 days and overdue
+Schedule::command('finance:send-due-reminders')
+    ->dailyAt('08:00')
+    ->timezone('Asia/Jakarta')
+    ->withoutOverlapping()
+    ->onOneServer()
+    ->appendOutputTo(storage_path('logs/invoice-reminders.log'))
+    ->name('invoice-due-reminders');
+

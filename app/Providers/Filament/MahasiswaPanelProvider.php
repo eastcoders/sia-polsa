@@ -66,6 +66,9 @@ class MahasiswaPanelProvider extends PanelProvider
                 NavigationGroup::make()
                     ->label('Layanan Akademik')
                     ->icon(Heroicon::OutlinedCalendar),
+                NavigationGroup::make()
+                    ->label('Keuangan')
+                    ->icon(Heroicon::OutlinedBanknotes),
             ]);
     }
 }
